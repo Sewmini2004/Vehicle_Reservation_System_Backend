@@ -1,6 +1,8 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.CustomerDTO;
+import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
+import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.factory.CustomerServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
 import jakarta.servlet.ServletException;
@@ -21,34 +23,45 @@ public class CustomerServlet extends HttpServlet {
         customerService = CustomerServiceFactory.getCustomerService();
     }
 
+
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String name = request.getParameter("name");
-        String address = request.getParameter("address");
-        String nic = request.getParameter("nic");
-        String phoneNumber = request.getParameter("phone");
-        String registrationDate = request.getParameter("registrationDate");
-        String email = request.getParameter("email");
-        int userId = Integer.parseInt(request.getParameter("userId"));
+        try {
+            String name = request.getParameter("name");
+            String email = request.getParameter("email");
+            String phone = request.getParameter("phone");
 
-        CustomerDTO customer = new CustomerDTO(0, userId, name, address, nic, phoneNumber, registrationDate, email);
+            CustomerDTO customerDTO = new CustomerDTO(0, 0, name, "", "", phone, "", email);
 
-        if (customerService.addCustomer(customer)) {
-            response.getWriter().write("Customer added successfully!");
-        } else {
-            response.getWriter().write("Error adding customer.");
+            if (customerService.addCustomer(customerDTO)) {
+                response.setStatus(HttpServletResponse.SC_CREATED);
+                response.getWriter().write("Customer added successfully.");
+            }
+        } catch (AlreadyException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(e.getMessage());
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("An error occurred while processing your request.");
         }
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("customerId"));
-        CustomerDTO customer = customerService.getCustomerById(customerId);
+        try {
+            int customerId = Integer.parseInt(request.getParameter("customerId"));
+            CustomerDTO customer = customerService.getCustomerById(customerId);
 
-        if (customer != null) {
-            response.getWriter().write("Customer Details: " + customer.toString());
-        } else {
-            response.getWriter().write("Customer not found.");
+            if (customer != null) {
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("Customer found: " + customer.getName());
+            }
+        } catch (NotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write(e.getMessage());
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("An error occurred while processing your request.");
         }
     }
 
