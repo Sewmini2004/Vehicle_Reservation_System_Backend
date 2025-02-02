@@ -1,8 +1,8 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
-import com.example.Vehicle_Reservation_System_Backend.entity.CustomerEntity;
+import com.example.Vehicle_Reservation_System_Backend.dto.CustomerDTO;
+import com.example.Vehicle_Reservation_System_Backend.factory.CustomerServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
-import com.example.Vehicle_Reservation_System_Backend.service.impl.CustomerServiceImpl;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -18,7 +18,7 @@ public class CustomerServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        customerService = new CustomerServiceImpl();
+        customerService = CustomerServiceFactory.getCustomerService();
     }
 
     @Override
@@ -31,7 +31,7 @@ public class CustomerServlet extends HttpServlet {
         String email = request.getParameter("email");
         int userId = Integer.parseInt(request.getParameter("userId"));
 
-        CustomerEntity customer = new CustomerEntity(0, userId, name, address, nic, phoneNumber, registrationDate, email);
+        CustomerDTO customer = new CustomerDTO(0, userId, name, address, nic, phoneNumber, registrationDate, email);
 
         if (customerService.addCustomer(customer)) {
             response.getWriter().write("Customer added successfully!");
@@ -43,7 +43,7 @@ public class CustomerServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         int customerId = Integer.parseInt(request.getParameter("customerId"));
-        CustomerEntity customer = customerService.getCustomerById(customerId);
+        CustomerDTO customer = customerService.getCustomerById(customerId);
 
         if (customer != null) {
             response.getWriter().write("Customer Details: " + customer.toString());
@@ -62,7 +62,7 @@ public class CustomerServlet extends HttpServlet {
         String registrationDate = request.getParameter("registrationDate");
         String email = request.getParameter("email");
 
-        CustomerEntity customer = new CustomerEntity(customerId, 0, name, address, nic, phoneNumber, registrationDate, email);
+        CustomerDTO customer = new CustomerDTO(customerId, 0, name, address, nic, phoneNumber, registrationDate, email);
 
         if (customerService.updateCustomer(customer)) {
             response.getWriter().write("Customer updated successfully!");

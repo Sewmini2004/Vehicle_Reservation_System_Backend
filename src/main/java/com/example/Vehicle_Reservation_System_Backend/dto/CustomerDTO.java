@@ -1,4 +1,4 @@
-package com.example.Vehicle_Reservation_System_Backend.dao;
+package com.example.Vehicle_Reservation_System_Backend.dto;
 
 public class CustomerDTO {
     private int customerId;
