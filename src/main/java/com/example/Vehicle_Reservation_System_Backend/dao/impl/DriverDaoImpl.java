@@ -22,7 +22,7 @@ public class DriverDaoImpl implements DriverDao {
     public boolean saveDriver(DriverEntity driverEntity) {
         // Check if the license number or phone number already exists
         try {
-            String queryCheckExistence = "SELECT COUNT(*) FROM drivers WHERE license_number = ? OR phone_number = ?";
+            String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE licenseNumber = ? OR phoneNumber = ?";
             PreparedStatement stmt = connection.prepareStatement(queryCheckExistence);
             stmt.setString(1, driverEntity.getLicenseNumber());
             stmt.setString(2, driverEntity.getPhoneNumber());
@@ -36,7 +36,7 @@ public class DriverDaoImpl implements DriverDao {
         }
 
         // Insert the driver into the database
-        String query = "INSERT INTO drivers (vehicle_id, name, license_number, status, shift_timing, salary, experience_years, phone_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO driver (vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverEntity.getVehicleId());
             stmt.setString(2, driverEntity.getName());
@@ -56,21 +56,21 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public DriverEntity getById(int driverId) {
-        String query = "SELECT * FROM drivers WHERE driver_id = ?";
+        String query = "SELECT * FROM driver WHERE driver_id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new DriverEntity(
-                        rs.getInt("driver_id"),
-                        rs.getInt("vehicle_id"),
+                        rs.getInt("driverId"),
+                        rs.getInt("vehicleId"),
                         rs.getString("name"),
-                        rs.getString("license_number"),
+                        rs.getString("licenseNumber"),
                         rs.getString("status"),
-                        rs.getString("shift_timing"),
+                        rs.getString("shiftTiming"),
                         rs.getDouble("salary"),
-                        rs.getInt("experience_years"),
-                        rs.getString("phone_number")
+                        rs.getInt("experienceYears"),
+                        rs.getString("phoneNumber")
                 );
             } else {
                 throw new NotFoundException("Driver with ID " + driverId + " not found.");
@@ -84,7 +84,7 @@ public class DriverDaoImpl implements DriverDao {
     @Override
     public boolean updateDriver(DriverEntity driverEntity) {
         // Check if the driver exists before updating
-        String queryCheckExistence = "SELECT COUNT(*) FROM drivers WHERE driver_id = ?";
+        String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, driverEntity.getDriverId());
             ResultSet rs = stmt.executeQuery();
@@ -97,7 +97,7 @@ public class DriverDaoImpl implements DriverDao {
         }
 
         // Proceed to update the driver
-        String query = "UPDATE drivers SET vehicle_id = ?, name = ?, license_number = ?, status = ?, shift_timing = ?, salary = ?, experience_years = ?, phone_number = ? WHERE driver_id = ?";
+        String query = "UPDATE driver SET vehicleId = ?, name = ?, licenseNumber = ?, status = ?, shiftTiming = ?, salary = ?, experienceYears = ?, phoneNumber = ? WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverEntity.getVehicleId());
             stmt.setString(2, driverEntity.getName());
@@ -119,7 +119,7 @@ public class DriverDaoImpl implements DriverDao {
     @Override
     public boolean deleteDriver(int driverId) {
         // Check if the driver exists before deleting
-        String queryCheckExistence = "SELECT COUNT(*) FROM drivers WHERE driver_id = ?";
+        String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
@@ -132,7 +132,7 @@ public class DriverDaoImpl implements DriverDao {
         }
 
         // Proceed to delete the driver
-        String query = "DELETE FROM drivers WHERE driver_id = ?";
+        String query = "DELETE FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
             int rowsAffected = stmt.executeUpdate();
@@ -146,20 +146,20 @@ public class DriverDaoImpl implements DriverDao {
     @Override
     public List<DriverEntity> getAllDrivers() {
         List<DriverEntity> drivers = new ArrayList<>();
-        String query = "SELECT * FROM drivers";
+        String query = "SELECT * FROM driver";
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 drivers.add(new DriverEntity(
-                        rs.getInt("driver_id"),
-                        rs.getInt("vehicle_id"),
+                        rs.getInt("driverId"),
+                        rs.getInt("vehicleId"),
                         rs.getString("name"),
-                        rs.getString("license_number"),
+                        rs.getString("licenseNumber"),
                         rs.getString("status"),
-                        rs.getString("shift_timing"),
+                        rs.getString("shiftTiming"),
                         rs.getDouble("salary"),
-                        rs.getInt("experience_years"),
-                        rs.getString("phone_number")
+                        rs.getInt("experienceYears"),
+                        rs.getString("phoneNumber")
                 ));
             }
         } catch (SQLException e) {
