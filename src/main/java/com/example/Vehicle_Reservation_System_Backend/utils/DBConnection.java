@@ -9,12 +9,16 @@ public class DBConnection {
     private Connection connection;
 
     private DBConnection() {
+        System.out.println("LOG::DBConnection::Constructor:Started");
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/vehicle_reservation?useSSL=false", "root", "1234");
         } catch (SQLException | ClassNotFoundException throwables) {
+            System.out.println("LOG::DBConnection::Constructor:An error occured while creating db connection.\nmessage: "+throwables.getMessage());
             throwables.printStackTrace();
+
         }
+        System.out.println("LOG::DBConnection::Constructor:end");
     }
 
     public static DBConnection getInstance() {
