@@ -1,4 +1,124 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
-public class DriverServlet {
+import com.example.Vehicle_Reservation_System_Backend.dto.DriverDTO;
+import com.example.Vehicle_Reservation_System_Backend.service.DriverService;
+import com.example.Vehicle_Reservation_System_Backend.factory.DriverServiceFactory;
+import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+
+import java.io.IOException;
+
+@WebServlet("/driver")
+public class DriverServlet extends HttpServlet {
+
+    private DriverService driverService;
+
+    @Override
+    public void init() throws ServletException {
+        driverService = DriverServiceFactory.getDriverService();
+    }
+
+    //  CREATE (POST) - Add a new driver
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            String jsonData = JsonUtils.getJsonFromRequest(request);
+            String name = JsonUtils.extractJsonValue(jsonData, "name");
+            String licenseNumber = JsonUtils.extractJsonValue(jsonData, "licenseNumber");
+            String status = JsonUtils.extractJsonValue(jsonData, "status");
+            String shiftTiming = JsonUtils.extractJsonValue(jsonData, "shiftTiming");
+            String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
+            double salary = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "salary"));
+            int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
+            int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
+
+            if (name == null || licenseNumber == null || phoneNumber == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Missing required fields.");
+                return;
+            }
+
+            DriverDTO driver = new DriverDTO(0, vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+
+            if (driverService.addDriver(driver)) {
+                response.setStatus(HttpServletResponse.SC_CREATED);
+                response.getWriter().write("Driver added successfully.");
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("Error adding driver.");
+            }
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Error adding driver: " + e.getMessage());
+        }
+    }
+
+    //  READ (GET) - Fetch driver details
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int driverId = Integer.parseInt(request.getParameter("driverId"));
+            DriverDTO driver = driverService.getDriverById(driverId);
+
+            if (driver != null) {
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("Driver found: " + driver.getName());
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("Driver not found.");
+            }
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Error retrieving driver.");
+        }
+    }
+
+    // UPDATE (PUT) - Modify driver details
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            String jsonData = JsonUtils.getJsonFromRequest(request);
+            int driverId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "driverId"));
+            String name = JsonUtils.extractJsonValue(jsonData, "name");
+            String licenseNumber = JsonUtils.extractJsonValue(jsonData, "licenseNumber");
+            String status = JsonUtils.extractJsonValue(jsonData, "status");
+            String shiftTiming = JsonUtils.extractJsonValue(jsonData, "shiftTiming");
+            double salary = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "salary"));
+            int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
+            String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
+            int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
+
+            DriverDTO driver = new DriverDTO(driverId, vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+
+            if (driverService.updateDriver(driver)) {
+                response.getWriter().write("Driver updated successfully!");
+            } else {
+                response.getWriter().write("Error updating driver.");
+            }
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Error updating driver.");
+        }
+    }
+
+    // DELETE (DELETE) - Remove a driver
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        try {
+            int driverId = Integer.parseInt(request.getParameter("driverId"));
+
+            if (driverService.deleteDriver(driverId)) {
+                response.getWriter().write("Driver deleted successfully!");
+            } else {
+                response.getWriter().write("Error deleting driver.");
+            }
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("Error deleting driver.");
+        }
+    }
 }
