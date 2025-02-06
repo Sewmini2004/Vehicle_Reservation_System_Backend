@@ -64,12 +64,15 @@ public class CustomerServiceImpl implements CustomerService {
         if (!isValidNIC(customerDTO.getNic())) {
             throw new IllegalArgumentException("Invalid NIC format.");
         }
-
+        Boolean isExists = existsById(customerDTO.getCustomerId());
+        if (!isExists) {
+            throw new NotFoundException("Customer is not found");
+        }
         CustomerEntity customerEntity = CustomerConverter.convertToEntity(customerDTO);
         try {
             return customerDao.updateCustomer(customerEntity);
         } catch (NotFoundException e) {
-            throw e;  // Propagate the exception to the controller
+            throw e;
         }
     }
 

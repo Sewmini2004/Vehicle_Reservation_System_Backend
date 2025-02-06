@@ -106,7 +106,7 @@ public class CustomerServlet extends HttpServlet {
 
             if (customer != null) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("Customer found: " + customer.getName());
+                response.getWriter().write(JsonUtils.convertDtoToJson(customer));
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 response.getWriter().write("Error: Customer not found.");
@@ -142,7 +142,7 @@ public class CustomerServlet extends HttpServlet {
             String name = JsonUtils.extractJsonValue(jsonData, "name");
             String address = JsonUtils.extractJsonValue(jsonData, "address");
             String email = JsonUtils.extractJsonValue(jsonData, "email");
-            String phone = JsonUtils.extractJsonValue(jsonData, "phoneNumber"); // ✅ FIXED
+            String phone = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
 
             CustomerDTO customerDTO = new CustomerDTO(customerId, userId, name, address, nic, phone, registrationDate, email);
 
@@ -151,7 +151,11 @@ public class CustomerServlet extends HttpServlet {
             } else {
                 response.getWriter().write("Error updating customer.");
             }
-        }  catch (Exception e) {
+        } catch (NotFoundException e){
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write(e.getMessage());
+        }
+        catch (Exception  e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("Error updating customer.");
