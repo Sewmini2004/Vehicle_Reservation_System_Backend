@@ -9,8 +9,10 @@ import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundExceptio
 import com.example.Vehicle_Reservation_System_Backend.service.DriverService;
 import com.example.Vehicle_Reservation_System_Backend.utils.DriverConverter;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class DriverServiceImpl implements DriverService {
 
@@ -71,6 +73,11 @@ public class DriverServiceImpl implements DriverService {
     @Override
     public boolean deleteDriver(int driverId) {
         return driverDao.deleteDriver(driverId);
+    }
+
+    @Override
+    public List<DriverDTO> getAllDrivers() {
+        return driverDao.getAllDrivers().stream().map(driverEntity -> DriverConverter.convertToDTO(driverEntity)).collect(Collectors.toList());
     }
 
     // Helper method to validate license number format
