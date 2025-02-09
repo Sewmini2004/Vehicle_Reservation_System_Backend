@@ -55,7 +55,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public DriverEntity getById(int driverId) {
-        String query = "SELECT * FROM driver WHERE driver_id = ?";
+        String query = "SELECT * FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
