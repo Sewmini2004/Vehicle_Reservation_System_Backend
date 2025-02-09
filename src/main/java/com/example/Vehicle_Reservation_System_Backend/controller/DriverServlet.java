@@ -32,9 +32,9 @@ public class DriverServlet extends HttpServlet {
             String status = JsonUtils.extractJsonValue(jsonData, "status");
             String shiftTiming = JsonUtils.extractJsonValue(jsonData, "shiftTiming");
             String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
-            double salary = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "salary"));
+            String salary1 = JsonUtils.extractJsonValue(jsonData, "salary");
+            double salary = Double.parseDouble(salary1);
             int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
-            int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
 
             if (name == null || licenseNumber == null || phoneNumber == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -42,7 +42,7 @@ public class DriverServlet extends HttpServlet {
                 return;
             }
 
-            DriverDTO driver = new DriverDTO(0, vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+            DriverDTO driver = new DriverDTO(0, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
 
             if (driverService.addDriver(driver)) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
@@ -87,12 +87,12 @@ public class DriverServlet extends HttpServlet {
             String licenseNumber = JsonUtils.extractJsonValue(jsonData, "licenseNumber");
             String status = JsonUtils.extractJsonValue(jsonData, "status");
             String shiftTiming = JsonUtils.extractJsonValue(jsonData, "shiftTiming");
-            double salary = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "salary"));
+            String salary1 = JsonUtils.extractJsonValue(jsonData, "salary");
+            double salary = Double.parseDouble(salary1);
             int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
             String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
-            int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
 
-            DriverDTO driver = new DriverDTO(driverId, vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+            DriverDTO driver = new DriverDTO(driverId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
 
             if (driverService.updateDriver(driver)) {
                 response.getWriter().write("Driver updated successfully!");

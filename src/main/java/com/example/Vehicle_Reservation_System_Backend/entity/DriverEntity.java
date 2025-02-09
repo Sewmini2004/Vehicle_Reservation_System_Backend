@@ -2,7 +2,6 @@ package com.example.Vehicle_Reservation_System_Backend.entity;
 
 public class DriverEntity{
     private int driverId;
-    private int vehicleId;
     private String name;
     private String licenseNumber;
     private String status;
@@ -11,9 +10,8 @@ public class DriverEntity{
     private int experienceYears;
     private String phoneNumber;
 
-    public DriverEntity(int driverId, int vehicleId, String name, String licenseNumber, String status, String shiftTiming, double salary, int experienceYears, String phoneNumber) {
+    public DriverEntity(int driverId, String name, String licenseNumber, String status, String shiftTiming, double salary, int experienceYears, String phoneNumber) {
         this.driverId = driverId;
-        this.vehicleId = vehicleId;
         this.name = name;
         this.licenseNumber = licenseNumber;
         this.status = status;
@@ -32,14 +30,6 @@ public class DriverEntity{
 
     public void setDriverId(int driverId) {
         this.driverId = driverId;
-    }
-
-    public int getVehicleId() {
-        return vehicleId;
-    }
-
-    public void setVehicleId(int vehicleId) {
-        this.vehicleId = vehicleId;
     }
 
     public String getName() {

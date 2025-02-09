@@ -19,9 +19,15 @@ public class JsonUtils {
         return jsonBuffer.toString();
     }
     public static String extractJsonValue(String json, String key) {
-        String pattern = "\""+ key +"\"\\s*:\\s*\"(.*?)\"";
+        // Regex pattern to match both string and numeric values
+        String pattern = "\""+ key +"\"\\s*:\\s*(\"(.*?)\"|([\\d.]+)|true|false|null)";
         Pattern regex = Pattern.compile(pattern);
         Matcher matcher = regex.matcher(json);
-        return matcher.find() ? matcher.group(1) : null;
+
+        if (matcher.find()) {
+            return matcher.group(2) != null ? matcher.group(2) : matcher.group(3);
+        }
+        return null;
     }
+
 }

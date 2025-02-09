@@ -8,7 +8,6 @@ public class DriverConverter {
     public static DriverDTO convertToDTO(DriverEntity driverEntity) {
         return new DriverDTO(
                 driverEntity.getDriverId(),
-                driverEntity.getVehicleId(),
                 driverEntity.getName(),
                 driverEntity.getLicenseNumber(),
                 driverEntity.getStatus(),
@@ -22,7 +21,6 @@ public class DriverConverter {
     public static DriverEntity convertToEntity(DriverDTO driverDTO) {
         return new DriverEntity(
                 driverDTO.getDriverId(),
-                driverDTO.getVehicleId(),
                 driverDTO.getName(),
                 driverDTO.getLicenseNumber(),
                 driverDTO.getStatus(),

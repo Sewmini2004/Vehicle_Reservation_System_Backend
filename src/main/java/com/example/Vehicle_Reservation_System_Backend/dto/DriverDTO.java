@@ -2,7 +2,6 @@ package com.example.Vehicle_Reservation_System_Backend.dto;
 
 public class DriverDTO {
     private int driverId;
-    private int vehicleId;
     private String name;
     private String licenseNumber;
     private String status;
@@ -11,9 +10,8 @@ public class DriverDTO {
     private int experienceYears;
     private String phoneNumber;
 
-    public DriverDTO(int driverId, int vehicleId, String name, String licenseNumber, String status, String shiftTiming, double salary, int experienceYears, String phoneNumber) {
+    public DriverDTO(int driverId, String name, String licenseNumber, String status, String shiftTiming, double salary, int experienceYears, String phoneNumber) {
         this.driverId = driverId;
-        this.vehicleId = vehicleId;
         this.name = name;
         this.licenseNumber = licenseNumber;
         this.status = status;
@@ -32,14 +30,6 @@ public class DriverDTO {
 
     public void setDriverId(int driverId) {
         this.driverId = driverId;
-    }
-
-    public int getVehicleId() {
-        return vehicleId;
-    }
-
-    public void setVehicleId(int vehicleId) {
-        this.vehicleId = vehicleId;
     }
 
     public String getName() {
