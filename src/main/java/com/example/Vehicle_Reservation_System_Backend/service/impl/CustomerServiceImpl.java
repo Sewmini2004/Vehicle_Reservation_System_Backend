@@ -9,6 +9,7 @@ import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundExceptio
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
 import com.example.Vehicle_Reservation_System_Backend.utils.CustomerConverter;
 
+import java.sql.SQLException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -17,14 +18,14 @@ public class CustomerServiceImpl implements CustomerService {
 
     // Regex for email and NIC validation
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
-    private static final String NIC_REGEX = "\\d{10}"; // Assuming NIC is a 10-digit number
+    private static final String NIC_REGEX = "^(?:19|20)?\\d{2}[0-9]{10}|[0-9]{9}[x|X|v|V]$";
 
     public CustomerServiceImpl() {
         this.customerDao = new CustomerDaoImpl();
     }
 
     @Override
-    public boolean addCustomer(CustomerDTO customerDTO) {
+    public boolean addCustomer(CustomerDTO customerDTO) throws SQLException {
         // Validate email and NIC
         if (!isValidEmail(customerDTO.getEmail())) {
             throw new IllegalArgumentException("Invalid email format.");
@@ -37,8 +38,8 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customerEntity = CustomerConverter.convertToEntity(customerDTO);
         try {
             return customerDao.saveCustomer(customerEntity);
-        } catch (AlreadyException e) {
-            throw e;  // Propagate the exception to the controller
+        } catch (Exception e) {
+            throw e;
         }
     }
 
@@ -46,6 +47,11 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerDTO getCustomerById(int customerId) {
         CustomerEntity customerEntity = customerDao.getById(customerId);
         return CustomerConverter.convertToDTO(customerEntity);
+    }
+
+    @Override
+    public boolean existsById(int customerId) {
+        return customerDao.existsById(customerId);
     }
 
     @Override
@@ -58,12 +64,15 @@ public class CustomerServiceImpl implements CustomerService {
         if (!isValidNIC(customerDTO.getNic())) {
             throw new IllegalArgumentException("Invalid NIC format.");
         }
-
+        Boolean isExists = existsById(customerDTO.getCustomerId());
+        if (!isExists) {
+            throw new NotFoundException("Customer is not found");
+        }
         CustomerEntity customerEntity = CustomerConverter.convertToEntity(customerDTO);
         try {
             return customerDao.updateCustomer(customerEntity);
         } catch (NotFoundException e) {
-            throw e;  // Propagate the exception to the controller
+            throw e;
         }
     }
 
