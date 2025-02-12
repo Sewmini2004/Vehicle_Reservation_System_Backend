@@ -1,8 +1,10 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.BookingDTO;
+import com.example.Vehicle_Reservation_System_Backend.exception.DateFormatException;
 import com.example.Vehicle_Reservation_System_Backend.service.BookingService;
 import com.example.Vehicle_Reservation_System_Backend.factory.BookingServiceFactory;
+import com.example.Vehicle_Reservation_System_Backend.utils.DateFormatUtils;
 import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -11,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
@@ -105,6 +108,16 @@ public class BookingServlet extends HttpServlet {
             String jsonData = JsonUtils.getJsonFromRequest(request);
 
             int bookingId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "bookingId"));
+
+            // Fetch existing booking details to retain the original booking date
+            BookingDTO existingBooking = bookingService.getBookingById(bookingId);
+            if (existingBooking == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("Booking not found.");
+                return;
+            }
+
+            // Extract updated details from JSON
             int customerId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "customerId"));
             int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
             int driverId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "driverId"));
@@ -113,17 +126,24 @@ public class BookingServlet extends HttpServlet {
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
             double totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
 
-            BookingDTO bookingDTO = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill);
+            Date originalBookingDate  = DateFormatUtils.toDate(JsonUtils.extractJsonValue(jsonData, "bookingDate"));
 
-            if (bookingService.updateBooking(bookingDTO)) {
+            BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill);
+
+            // Update the booking in the system
+            if (bookingService.updateBooking(updatedBooking)) {
                 response.getWriter().write("Booking updated successfully.");
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("Booking cannot be updated after 2 hours.");
             }
-        } catch (Exception e) {
+        } catch (DateFormatException ex){
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("{ \"Message\": "+ ex.getMessage() + "}");
+        }
+        catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error updating booking.");
+            response.getWriter().write("Error updating booking: " + e.getMessage());
         }
     }
 

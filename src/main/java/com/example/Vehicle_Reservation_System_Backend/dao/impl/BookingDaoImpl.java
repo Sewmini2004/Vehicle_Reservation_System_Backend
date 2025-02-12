@@ -3,6 +3,7 @@ package com.example.Vehicle_Reservation_System_Backend.dao.impl;
 import com.example.Vehicle_Reservation_System_Backend.dao.BookingDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.BookingEntity;
 import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
+import com.example.Vehicle_Reservation_System_Backend.utils.DateFormatUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -88,13 +89,14 @@ public class BookingDaoImpl implements BookingDao {
 
     @Override
     public boolean updateBooking(BookingEntity booking) {
-        String query = "UPDATE booking SET pickupLocation = ?, dropLocation = ?, carType = ?, totalBill = ? WHERE bookingId = ?";
+        String query = "UPDATE booking SET pickupLocation = ?, dropLocation = ?, carType = ?, totalBill = ? , bookingDate = ? WHERE bookingId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, booking.getPickupLocation());
             stmt.setString(2, booking.getDropLocation());
             stmt.setString(3, booking.getCarType());
             stmt.setDouble(4, booking.getTotalBill());
-            stmt.setInt(5, booking.getBookingId());
+            stmt.setDate(5, DateFormatUtils.convertUtilToSqlDate(booking.getBookingDate()));
+            stmt.setInt(6, booking.getBookingId());
 
             int rowsUpdated = stmt.executeUpdate();
             return rowsUpdated > 0;

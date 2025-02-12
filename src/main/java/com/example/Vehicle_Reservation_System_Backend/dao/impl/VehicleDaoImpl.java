@@ -128,4 +128,21 @@ public class VehicleDaoImpl implements VehicleDao {
         return false;
     }
 
+    @Override
+    public boolean existsById(int id) {
+        // Check if the vehicle exists before updating
+        String queryCheckExistence = "SELECT COUNT(*) FROM vehicle WHERE  vehicleId= ?";
+        try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getInt(1) == 0) {
+                return false;
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
