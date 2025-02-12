@@ -19,10 +19,10 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public boolean saveCustomer(CustomerEntity customerEntity) {
+    public boolean saveCustomer(CustomerEntity customerEntity) throws SQLException {
         // Check if the email or NIC already exists
         try {
-            String queryCheckExistence = "SELECT COUNT(*) FROM customers WHERE email = ? OR nic = ?";
+            String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE email = ? OR nic = ?";
             PreparedStatement stmt = connection.prepareStatement(queryCheckExistence);
             stmt.setString(1, customerEntity.getEmail());
             stmt.setString(2, customerEntity.getNic());
@@ -36,7 +36,7 @@ public class CustomerDaoImpl implements CustomerDao {
         }
 
         // If no existing record found, proceed to insert
-        String query = "INSERT INTO customers (user_id, name, address, nic, phone_number, registration_date, email) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO customer (userId, name, address, nic, phoneNumber, registrationDate, email) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, customerEntity.getUserId());
             stmt.setString(2, customerEntity.getName());
@@ -50,25 +50,25 @@ public class CustomerDaoImpl implements CustomerDao {
             return true;
         } catch (SQLException e) {
             e.printStackTrace();
+            throw e;
         }
-        return false;
     }
 
     @Override
     public CustomerEntity getById(int id) {
-        String query = "SELECT * FROM customers WHERE customer_id = ?";
+        String query = "SELECT * FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new CustomerEntity(
-                        rs.getInt("customer_id"),
-                        rs.getInt("user_id"),
+                        rs.getInt("customerId"),
+                        rs.getInt("userId"),
                         rs.getString("name"),
                         rs.getString("address"),
                         rs.getString("nic"),
-                        rs.getString("phone_number"),
-                        rs.getString("registration_date"),
+                        rs.getString("phoneNumber"),
+                        rs.getString("registrationDate"),
                         rs.getString("email")
                 );
             } else {
@@ -81,22 +81,29 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public boolean updateCustomer(CustomerEntity customerEntity) {
+    public boolean existsById(int id) {
         // Check if the customer exists before updating
-        String queryCheckExistence = "SELECT COUNT(*) FROM customers WHERE customer_id = ?";
+        String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
-            stmt.setInt(1, customerEntity.getCustomerId());
+            stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next() && rs.getInt(1) == 0) {
-                throw new NotFoundException("Customer with ID " + customerEntity.getCustomerId() + " not found.");
+                return false;
             }
+            return true;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
+    }
+
+    @Override
+    public boolean updateCustomer(CustomerEntity customerEntity) {
+        // Check if the customer exists before updating
+        if(!existsById(customerEntity.getCustomerId())) throw new NotFoundException("Customer with ID " + customerEntity.getCustomerId() + " not found.");
 
         // Proceed to update the customer
-        String query = "UPDATE customers SET name = ?, address = ?, nic = ?, phone_number = ?, registration_date = ?, email = ? WHERE customer_id = ?";
+        String query = "UPDATE customer SET name = ?, address = ?, nic = ?, phoneNumber = ?, registrationDate = ?, email = ? WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, customerEntity.getName());
             stmt.setString(2, customerEntity.getAddress());
@@ -115,7 +122,7 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public boolean deleteCustomer(int id) {
-        String queryCheckExistence = "SELECT COUNT(*) FROM customers WHERE customer_id = ?";
+        String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -128,7 +135,7 @@ public class CustomerDaoImpl implements CustomerDao {
         }
 
         // Proceed to delete the customer
-        String query = "DELETE FROM customers WHERE customer_id = ?";
+        String query = "DELETE FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, id);
             int rowsAffected = stmt.executeUpdate();
@@ -142,18 +149,18 @@ public class CustomerDaoImpl implements CustomerDao {
     @Override
     public List<CustomerEntity> getAllCustomers() {
         List<CustomerEntity> customers = new ArrayList<>();
-        String query = "SELECT * FROM customers";
+        String query = "SELECT * FROM customer";
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
                 customers.add(new CustomerEntity(
-                        rs.getInt("customer_id"),
-                        rs.getInt("user_id"),
+                        rs.getInt("customerId"),
+                        rs.getInt("userId"),
                         rs.getString("name"),
                         rs.getString("address"),
                         rs.getString("nic"),
-                        rs.getString("phone_number"),
-                        rs.getString("registration_date"),
+                        rs.getString("phoneNumber"),
+                        rs.getString("registrationDate"),
                         rs.getString("email")
                 ));
             }

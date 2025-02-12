@@ -5,6 +5,7 @@ import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.factory.CustomerServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
+import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,77 +21,167 @@ public class CustomerServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
+        System.out.println("LOG::CustomerServlet::Initializing CustomerService");
         customerService = CustomerServiceFactory.getCustomerService();
+        if (customerService == null) {
+            System.err.println("LOG::CustomerServlet::Error - CustomerService is NULL!");
+            throw new ServletException("Failed to initialize CustomerService");
+        } else {
+            System.out.println("LOG::CustomerServlet::CustomerService initialized successfully.");
+        }
     }
 
-
+    // CREATE (POST) - Add a new customer
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String name = request.getParameter("name");
-            String email = request.getParameter("email");
-            String phone = request.getParameter("phone");
+            System.out.println("LOG::CustomerServlet::doPost::Started");
 
-            CustomerDTO customerDTO = new CustomerDTO(0, 0, name, "", "", phone, "", email);
+            // Get JSON data from request
+            String jsonData = JsonUtils.getJsonFromRequest(request);
+            if (jsonData == null || jsonData.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Error: JSON request body is missing.");
+                return;
+            }
 
+            // Extract values from JSON
+            System.out.println("Customer ID");
+            System.out.println(JsonUtils.extractJsonValue(jsonData, "customerId"));
+            int customerId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "customerId"));
+            int userId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "userId"));
+            String registrationDate = JsonUtils.extractJsonValue(jsonData, "registrationDate");
+            String nic = JsonUtils.extractJsonValue(jsonData, "nic");
+            String name = JsonUtils.extractJsonValue(jsonData, "name");
+            String address = JsonUtils.extractJsonValue(jsonData, "address");
+            String email = JsonUtils.extractJsonValue(jsonData, "email");
+            String phone = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
+
+            // Validate required fields
+            if (name == null || name.isEmpty() || email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Error: Missing required fields (name, email, phoneNumber).");
+                return;
+            }
+
+            // Create DTO object
+            CustomerDTO customerDTO = new CustomerDTO(customerId, userId, name, address, nic, phone, registrationDate, email);
+
+            // Check if customer already exists
+            if (customerService.existsById(customerId)) {
+                response.setStatus(HttpServletResponse.SC_CONFLICT);
+                response.getWriter().write("Error: Customer ID already exists.");
+                return;
+            }
+
+            // Add customer
             if (customerService.addCustomer(customerDTO)) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.getWriter().write("Customer added successfully.");
             }
-        } catch (AlreadyException e) {
+
+        } catch (IllegalArgumentException | AlreadyException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write(e.getMessage());
+            response.getWriter().write("{\"Error\" : \" "+e.getMessage()+" \"}");
         } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("An error occurred while processing your request.");
+            response.getWriter().write("{\"Error\" : \" An error occurred while processing your request. \"}");
         }
     }
 
+    // READ (GET) - Fetch customer details by ID
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            int customerId = Integer.parseInt(request.getParameter("customerId"));
+            String customerIdStr = request.getParameter("customerId");
+            if (customerIdStr == null || customerIdStr.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Error: Missing customerId parameter.");
+                return;
+            }
+
+            int customerId = Integer.parseInt(customerIdStr);
             CustomerDTO customer = customerService.getCustomerById(customerId);
 
             if (customer != null) {
                 response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("Customer found: " + customer.getName());
+                response.getWriter().write(JsonUtils.convertDtoToJson(customer));
+            } else {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("Error: Customer not found.");
             }
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("Error: Invalid customerId format.");
         } catch (NotFoundException e) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             response.getWriter().write(e.getMessage());
         } catch (Exception e) {
+            e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("An error occurred while processing your request.");
         }
     }
 
+    // UPDATE (PUT) - Modify customer details
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("customerId"));
-        String name = request.getParameter("name");
-        String address = request.getParameter("address");
-        String nic = request.getParameter("nic");
-        String phoneNumber = request.getParameter("phone");
-        String registrationDate = request.getParameter("registrationDate");
-        String email = request.getParameter("email");
+        try {
+            String jsonData = JsonUtils.getJsonFromRequest(request);
+            if (jsonData == null || jsonData.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Error: JSON request body is missing.");
+                return;
+            }
 
-        CustomerDTO customer = new CustomerDTO(customerId, 0, name, address, nic, phoneNumber, registrationDate, email);
+            int customerId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "customerId"));
+            int userId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "userId"));
+            String registrationDate = JsonUtils.extractJsonValue(jsonData, "registrationDate");
+            String nic = JsonUtils.extractJsonValue(jsonData, "nic");
+            String name = JsonUtils.extractJsonValue(jsonData, "name");
+            String address = JsonUtils.extractJsonValue(jsonData, "address");
+            String email = JsonUtils.extractJsonValue(jsonData, "email");
+            String phone = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
 
-        if (customerService.updateCustomer(customer)) {
-            response.getWriter().write("Customer updated successfully!");
-        } else {
+            CustomerDTO customerDTO = new CustomerDTO(customerId, userId, name, address, nic, phone, registrationDate, email);
+
+            if (customerService.updateCustomer(customerDTO)) {
+                response.getWriter().write("Customer updated successfully!");
+            } else {
+                response.getWriter().write("Error updating customer.");
+            }
+        } catch (NotFoundException e){
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            response.getWriter().write(e.getMessage());
+        }
+        catch (Exception  e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("Error updating customer.");
         }
     }
 
+    // DELETE (DELETE) - Remove a customer
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        int customerId = Integer.parseInt(request.getParameter("customerId"));
+        try {
+            String customerIdStr = request.getParameter("customerId");
+            if (customerIdStr == null || customerIdStr.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("Error: Missing customerId parameter.");
+                return;
+            }
 
-        if (customerService.deleteCustomer(customerId)) {
-            response.getWriter().write("Customer deleted successfully!");
-        } else {
+            int customerId = Integer.parseInt(customerIdStr);
+            if (customerService.deleteCustomer(customerId)) {
+                response.getWriter().write("Customer deleted successfully!");
+            } else {
+                response.getWriter().write("Error deleting customer.");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("Error deleting customer.");
         }
     }
