@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
 
 @WebServlet("/driver")
 public class DriverServlet extends HttpServlet {
@@ -32,9 +33,9 @@ public class DriverServlet extends HttpServlet {
             String status = JsonUtils.extractJsonValue(jsonData, "status");
             String shiftTiming = JsonUtils.extractJsonValue(jsonData, "shiftTiming");
             String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
-            double salary = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "salary"));
+            String salary1 = JsonUtils.extractJsonValue(jsonData, "salary");
+            double salary = Double.parseDouble(salary1);
             int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
-            int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
 
             if (name == null || licenseNumber == null || phoneNumber == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -42,7 +43,7 @@ public class DriverServlet extends HttpServlet {
                 return;
             }
 
-            DriverDTO driver = new DriverDTO(0, vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+            DriverDTO driver = new DriverDTO(0, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
 
             if (driverService.addDriver(driver)) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
@@ -57,23 +58,46 @@ public class DriverServlet extends HttpServlet {
         }
     }
 
-    //  READ (GET) - Fetch driver details
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            int driverId = Integer.parseInt(request.getParameter("driverId"));
-            DriverDTO driver = driverService.getDriverById(driverId);
+            String driverIdParam = request.getParameter("driverId");
 
-            if (driver != null) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write("Driver found: " + driver.getName());
+            if (driverIdParam != null && !driverIdParam.isEmpty()) {
+                // Fetch a single driver by ID
+                int driverId = Integer.parseInt(driverIdParam);
+                DriverDTO driver = driverService.getDriverById(driverId);
+
+                if (driver != null) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write("Driver found: " + driver.getName());
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("Driver not found.");
+                }
             } else {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("Driver not found.");
+                // Fetch all drivers if no ID is provided
+                List<DriverDTO> drivers = driverService.getAllDrivers();
+
+                if (!drivers.isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    StringBuilder responseText = new StringBuilder("Drivers List:\n");
+                    for (DriverDTO driver : drivers) {
+                        responseText.append("ID: ").append(driver.getDriverId())
+                                .append(", Name: ").append(driver.getName()).append("\n");
+                    }
+                    response.getWriter().write(responseText.toString());
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    response.getWriter().write("No drivers available.");
+                }
             }
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write("Invalid driver ID format.");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error retrieving driver.");
+            response.getWriter().write("Error retrieving driver details.");
         }
     }
 
@@ -87,12 +111,12 @@ public class DriverServlet extends HttpServlet {
             String licenseNumber = JsonUtils.extractJsonValue(jsonData, "licenseNumber");
             String status = JsonUtils.extractJsonValue(jsonData, "status");
             String shiftTiming = JsonUtils.extractJsonValue(jsonData, "shiftTiming");
-            double salary = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "salary"));
+            String salary1 = JsonUtils.extractJsonValue(jsonData, "salary");
+            double salary = Double.parseDouble(salary1);
             int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
             String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
-            int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
 
-            DriverDTO driver = new DriverDTO(driverId, vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+            DriverDTO driver = new DriverDTO(driverId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
 
             if (driverService.updateDriver(driver)) {
                 response.getWriter().write("Driver updated successfully!");

@@ -36,16 +36,15 @@ public class DriverDaoImpl implements DriverDao {
         }
 
         // Insert the driver into the database
-        String query = "INSERT INTO driver (vehicleId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO driver (name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, driverEntity.getVehicleId());
-            stmt.setString(2, driverEntity.getName());
-            stmt.setString(3, driverEntity.getLicenseNumber());
-            stmt.setString(4, driverEntity.getStatus());
-            stmt.setString(5, driverEntity.getShiftTiming());
-            stmt.setDouble(6, driverEntity.getSalary());
-            stmt.setInt(7, driverEntity.getExperienceYears());
-            stmt.setString(8, driverEntity.getPhoneNumber());
+            stmt.setString(1, driverEntity.getName());
+            stmt.setString(2, driverEntity.getLicenseNumber());
+            stmt.setString(3, driverEntity.getStatus());
+            stmt.setString(4, driverEntity.getShiftTiming());
+            stmt.setDouble(5, driverEntity.getSalary());
+            stmt.setInt(6, driverEntity.getExperienceYears());
+            stmt.setString(7, driverEntity.getPhoneNumber());
             stmt.executeUpdate();
             return true;
         } catch (SQLException e) {
@@ -56,14 +55,13 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public DriverEntity getById(int driverId) {
-        String query = "SELECT * FROM driver WHERE driver_id = ?";
+        String query = "SELECT * FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 return new DriverEntity(
                         rs.getInt("driverId"),
-                        rs.getInt("vehicleId"),
                         rs.getString("name"),
                         rs.getString("licenseNumber"),
                         rs.getString("status"),
@@ -97,17 +95,16 @@ public class DriverDaoImpl implements DriverDao {
         }
 
         // Proceed to update the driver
-        String query = "UPDATE driver SET vehicleId = ?, name = ?, licenseNumber = ?, status = ?, shiftTiming = ?, salary = ?, experienceYears = ?, phoneNumber = ? WHERE driverId = ?";
+        String query = "UPDATE driver SET  name = ?, licenseNumber = ?, status = ?, shiftTiming = ?, salary = ?, experienceYears = ?, phoneNumber = ? WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, driverEntity.getVehicleId());
-            stmt.setString(2, driverEntity.getName());
-            stmt.setString(3, driverEntity.getLicenseNumber());
-            stmt.setString(4, driverEntity.getStatus());
-            stmt.setString(5, driverEntity.getShiftTiming());
-            stmt.setDouble(6, driverEntity.getSalary());
-            stmt.setInt(7, driverEntity.getExperienceYears());
-            stmt.setString(8, driverEntity.getPhoneNumber());
-            stmt.setInt(9, driverEntity.getDriverId());
+            stmt.setString(1, driverEntity.getName());
+            stmt.setString(2, driverEntity.getLicenseNumber());
+            stmt.setString(3, driverEntity.getStatus());
+            stmt.setString(4, driverEntity.getShiftTiming());
+            stmt.setDouble(5, driverEntity.getSalary());
+            stmt.setInt(6, driverEntity.getExperienceYears());
+            stmt.setString(7, driverEntity.getPhoneNumber());
+            stmt.setInt(8, driverEntity.getDriverId());
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
@@ -152,7 +149,6 @@ public class DriverDaoImpl implements DriverDao {
             while (rs.next()) {
                 drivers.add(new DriverEntity(
                         rs.getInt("driverId"),
-                        rs.getInt("vehicleId"),
                         rs.getString("name"),
                         rs.getString("licenseNumber"),
                         rs.getString("status"),
