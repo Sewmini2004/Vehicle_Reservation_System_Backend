@@ -7,8 +7,8 @@ import java.util.List;
 
 public interface BookingService {
     boolean addBooking(BookingDTO booking) throws SQLException;
-    BookingDTO getBookingById(int bookingId);
-    List<BookingDTO> getAllBookings();
+    BookingDTO getBookingById(int bookingId) throws SQLException;
+    List<BookingDTO> getAllBookings() throws SQLException;
     boolean updateBooking(BookingDTO booking);
-    boolean deleteBooking(int bookingId);
+    boolean deleteBooking(int bookingId) throws SQLException;
 }

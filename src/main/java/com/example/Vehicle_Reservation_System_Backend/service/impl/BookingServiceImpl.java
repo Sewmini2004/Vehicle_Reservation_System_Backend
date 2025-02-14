@@ -31,6 +31,7 @@ public class BookingServiceImpl implements BookingService {
             connection = DBConnection.getInstance().getConnection();
             connection.setAutoCommit(false); // Start transaction
 
+            // Validate if the customer, vehicle, and driver exist
             if (!customerDao.existsById(bookingDTO.getCustomerId())) {
                 throw new SQLException("Customer ID not found.");
             }
@@ -41,8 +42,8 @@ public class BookingServiceImpl implements BookingService {
                 throw new SQLException("Driver ID not found.");
             }
 
-            // Save booking entity
-            BookingEntity entity = new BookingEntity(bookingDTO);
+            // Convert DTO to Entity and save booking
+            BookingEntity entity = BookingConverter.convertToEntity(bookingDTO);
             boolean bookingSaved = bookingDao.saveBooking(entity);
 
             if (!bookingSaved) {
@@ -89,12 +90,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public BookingDTO getBookingById(int bookingId) {
+    public BookingDTO getBookingById(int bookingId) throws SQLException {
         BookingEntity entity = bookingDao.getBookingById(bookingId);
         if (entity == null) {
             throw new NotFoundException("Booking with ID " + bookingId + " not found.");
         }
 
+        // Convert Entity to DTO using the BookingConverter
         BookingDTO bookingDTO = BookingConverter.convertToDTO(entity);
 
         // Fetch billing details and attach to booking
@@ -107,12 +109,13 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<BookingDTO> getAllBookings() {
+    public List<BookingDTO> getAllBookings() throws SQLException {
         List<BookingEntity> bookingEntities = bookingDao.getAllBookings();
         List<BookingDTO> bookingDTOs = bookingEntities.stream()
-                .map(BookingConverter::convertToDTO)
+                .map(BookingConverter::convertToDTO) // Use the BookingConverter to map each entity to a DTO
                 .collect(Collectors.toList());
 
+        // Fetch billing details and attach to each booking DTO
         for (BookingDTO bookingDTO : bookingDTOs) {
             BillingDTO billingDTO = billingDao.getBillByBookingId(bookingDTO.getBookingId());
             if (billingDTO != null) {
@@ -124,7 +127,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public boolean updateBooking(BookingDTO bookingDTO) throws SQLException {
+    public boolean updateBooking(BookingDTO bookingDTO)  {
         Connection connection = null;
         boolean success = false;
 
@@ -132,7 +135,8 @@ public class BookingServiceImpl implements BookingService {
             connection = DBConnection.getInstance().getConnection();
             connection.setAutoCommit(false);
 
-            BookingEntity entity = new BookingEntity(bookingDTO);
+            // Convert DTO to Entity and update booking
+            BookingEntity entity = BookingConverter.convertToEntity(bookingDTO);
             boolean bookingUpdated = bookingDao.updateBooking(entity);
 
             if (!bookingUpdated) {
@@ -181,24 +185,53 @@ public class BookingServiceImpl implements BookingService {
     @Override
     public boolean deleteBooking(int bookingId) throws SQLException {
         Connection connection = DBConnection.getInstance().getConnection();
-        connection.setAutoCommit(false);
+        connection.setAutoCommit(false); // Start transaction
 
         try {
-            billingDao.deleteBill(bookingId);
-            boolean deleted = bookingDao.deleteBooking(bookingId);
+            // Check if the booking exists before trying to delete it
+            BookingEntity bookingEntity = bookingDao.getBookingById(bookingId);
+            if (bookingEntity == null) {
+                throw new NotFoundException("Booking with ID " + bookingId + " not found.");
+            }
 
-            if (!deleted) {
+            // Delete associated bill before deleting the booking
+            boolean billDeleted = billingDao.deleteBill(bookingId);
+            if (!billDeleted) {
+                throw new SQLException("Failed to delete billing information for booking ID " + bookingId);
+            }
+
+            // Delete the booking itself
+            boolean bookingDeleted = bookingDao.deleteBooking(bookingId);
+            if (!bookingDeleted) {
                 throw new SQLException("Failed to delete booking.");
             }
 
+            // Commit transaction if both operations were successful
             connection.commit();
             return true;
+
         } catch (SQLException e) {
-            connection.rollback();
-            throw e;
+            // Rollback transaction if any error occurs
+            if (connection != null) {
+                try {
+                    connection.rollback();
+                } catch (SQLException rollbackEx) {
+                    rollbackEx.printStackTrace();
+                }
+            }
+            throw e;  // Propagate the exception to be handled by the calling method
+
         } finally {
-            connection.setAutoCommit(true);
-            connection.close();
+            // Always reset autoCommit to true and close the connection
+            if (connection != null) {
+                try {
+                    connection.setAutoCommit(true); // Reset autoCommit to default
+                    connection.close(); // Ensure the connection is closed
+                } catch (SQLException closeEx) {
+                    closeEx.printStackTrace();
+                }
+            }
         }
     }
+
 }
