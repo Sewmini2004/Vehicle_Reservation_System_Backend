@@ -14,7 +14,7 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
-@WebServlet("/customer")
+
 public class CustomerServlet extends HttpServlet {
 
     private CustomerService customerService;
