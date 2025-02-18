@@ -3,15 +3,20 @@ package com.example.Vehicle_Reservation_System_Backend.service.impl;
 import com.example.Vehicle_Reservation_System_Backend.dao.CustomerDao;
 import com.example.Vehicle_Reservation_System_Backend.dao.impl.CustomerDaoImpl;
 import com.example.Vehicle_Reservation_System_Backend.dto.CustomerDTO;
+import com.example.Vehicle_Reservation_System_Backend.dto.VehicleDTO;
 import com.example.Vehicle_Reservation_System_Backend.entity.CustomerEntity;
+import com.example.Vehicle_Reservation_System_Backend.entity.VehicleEntity;
 import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
 import com.example.Vehicle_Reservation_System_Backend.utils.CustomerConverter;
+import com.example.Vehicle_Reservation_System_Backend.utils.VehicleConverter;
 
 import java.sql.SQLException;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class CustomerServiceImpl implements CustomerService {
     private CustomerDao customerDao;
@@ -83,6 +88,12 @@ public class CustomerServiceImpl implements CustomerService {
         } catch (NotFoundException e) {
             throw e;  // Propagate the exception to the controller
         }
+    }
+
+    @Override
+    public List<CustomerDTO> getAllCustomers() {
+        List<CustomerEntity> customerEntities = customerDao.getAllCustomers();
+        return customerEntities.stream().map(CustomerConverter::convertToDTO).collect(Collectors.toList());
     }
 
     // Helper method to validate email format
