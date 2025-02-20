@@ -58,6 +58,7 @@ public class DriverServlet extends HttpServlet {
         }
     }
 
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -70,10 +71,11 @@ public class DriverServlet extends HttpServlet {
 
                 if (driver != null) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Driver found: " + driver.getName());
+                    // Returning the driver as JSON in the desired format
+                    response.getWriter().write(JsonUtils.convertDtoToJson(driver));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.getWriter().write("Driver not found.");
+                    response.getWriter().write("{\"Error\" : \"Driver not found.\"}");
                 }
             } else {
                 // Fetch all drivers if no ID is provided
@@ -81,23 +83,19 @@ public class DriverServlet extends HttpServlet {
 
                 if (!drivers.isEmpty()) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    StringBuilder responseText = new StringBuilder("Drivers List:\n");
-                    for (DriverDTO driver : drivers) {
-                        responseText.append("ID: ").append(driver.getDriverId())
-                                .append(", Name: ").append(driver.getName()).append("\n");
-                    }
-                    response.getWriter().write(responseText.toString());
+                    // Returning all drivers as JSON in the desired format
+                    response.getWriter().write(JsonUtils.convertDtoToJson(drivers));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                    response.getWriter().write("No drivers available.");
+                    response.getWriter().write("{\"Message\" : \"No drivers available.\"}");
                 }
             }
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Invalid driver ID format.");
+            response.getWriter().write("{\"Error\" : \"Invalid driver ID format.\"}");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error retrieving driver details.");
+            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving driver details.\"}");
         }
     }
 
