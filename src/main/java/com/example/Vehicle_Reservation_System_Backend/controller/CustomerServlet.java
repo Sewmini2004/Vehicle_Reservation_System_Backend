@@ -13,8 +13,9 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.List;
 
-@WebServlet("/customer")
+
 public class CustomerServlet extends HttpServlet {
 
     private CustomerService customerService;
@@ -90,37 +91,44 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-    // READ (GET) - Fetch customer details by ID
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String customerIdStr = request.getParameter("customerId");
-            if (customerIdStr == null || customerIdStr.isEmpty()) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Error: Missing customerId parameter.");
-                return;
-            }
 
-            int customerId = Integer.parseInt(customerIdStr);
-            CustomerDTO customer = customerService.getCustomerById(customerId);
+            // Check if a specific customer ID is provided
+            if (customerIdStr != null && !customerIdStr.isEmpty()) {
+                int customerId = Integer.parseInt(customerIdStr);
+                CustomerDTO customer = customerService.getCustomerById(customerId);
 
-            if (customer != null) {
-                response.setStatus(HttpServletResponse.SC_OK);
-                response.getWriter().write(JsonUtils.convertDtoToJson(customer));
+                if (customer != null) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    // Returning customer as JSON in the desired format
+                    response.getWriter().write(JsonUtils.convertDtoToJson(customer));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"Error\" : \"Customer not found.\"}");
+                }
             } else {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                response.getWriter().write("Error: Customer not found.");
+                // If no customer ID is provided, fetch all customers
+                List<CustomerDTO> customers = customerService.getAllCustomers();
+
+                if (!customers.isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    // Returning all customers as JSON in the desired format
+                    response.getWriter().write(JsonUtils.convertDtoToJson(customers));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    response.getWriter().write("{\"Message\" : \"No customers available.\"}");
+                }
             }
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Error: Invalid customerId format.");
-        } catch (NotFoundException e) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(e.getMessage());
+            response.getWriter().write("{\"Error\" : \"Invalid customerId format.\"}");
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("An error occurred while processing your request.");
+            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving customer details.\"}");
         }
     }
 

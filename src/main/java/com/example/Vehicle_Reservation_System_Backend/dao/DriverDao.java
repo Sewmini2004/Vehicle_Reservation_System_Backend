@@ -11,4 +11,5 @@ public interface DriverDao {
     List<DriverEntity> getAllDrivers();
     boolean updateDriver(DriverEntity driverEntity);
     boolean deleteDriver(int driverId);
+    boolean existsById(int id);
 }

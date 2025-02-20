@@ -9,4 +9,6 @@ public interface VehicleDao {
     List<VehicleEntity> getAllVehicles();
     boolean updateVehicle(VehicleEntity vehicleEntity);
     boolean deleteVehicle(int vehicleId);
+    boolean existsById(int id);
+
 }

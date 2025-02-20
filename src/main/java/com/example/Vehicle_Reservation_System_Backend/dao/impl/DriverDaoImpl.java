@@ -163,4 +163,22 @@ public class DriverDaoImpl implements DriverDao {
         }
         return drivers;
     }
+
+    @Override
+    public boolean existsById(int id) {
+        // Check if the driver exists before updating
+        String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getInt(1) == 0) {
+                return false;
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
 }
