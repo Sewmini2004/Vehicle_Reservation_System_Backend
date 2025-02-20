@@ -57,7 +57,6 @@ public class VehicleServlet extends HttpServlet {
         }
     }
 
-    // READ (GET) - Fetch a specific vehicle by ID or list all vehicles
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -70,10 +69,11 @@ public class VehicleServlet extends HttpServlet {
 
                 if (vehicle != null) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Vehicle found: " + vehicle.getModel() + " (" + vehicle.getRegistrationNumber() + ")");
+                    // Returning the vehicle as JSON in the desired format
+                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicle));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.getWriter().write("Vehicle not found.");
+                    response.getWriter().write("{\"Error\" : \"Vehicle not found.\"}");
                 }
             } else {
                 // Fetch all vehicles if no ID is provided
@@ -81,24 +81,19 @@ public class VehicleServlet extends HttpServlet {
 
                 if (!vehicles.isEmpty()) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    StringBuilder responseText = new StringBuilder("Vehicle List:\n");
-                    for (VehicleDTO vehicle : vehicles) {
-                        responseText.append("ID: ").append(vehicle.getVehicleId())
-                                .append(", Model: ").append(vehicle.getModel())
-                                .append(", Registration: ").append(vehicle.getRegistrationNumber()).append("\n");
-                    }
-                    response.getWriter().write(responseText.toString());
+                    // Returning all vehicles as JSON in the desired format
+                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicles));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                    response.getWriter().write("No vehicles available.");
+                    response.getWriter().write("{\"Message\" : \"No vehicles available.\"}");
                 }
             }
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Invalid vehicle ID format.");
+            response.getWriter().write("{\"Error\" : \"Invalid vehicle ID format.\"}");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error retrieving vehicle details.");
+            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving vehicle details.\"}");
         }
     }
 
