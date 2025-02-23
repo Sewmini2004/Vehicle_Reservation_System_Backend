@@ -22,13 +22,7 @@
         private VehicleDao vehicleDao;
         private BillingDao billingDao;
 
-        public BookingServiceImpl(
-                BookingDao bookingDao,
-                CustomerDao customerDao,
-                DriverDao driverDao,
-                VehicleDao vehicleDao,
-                BillingDao billingDao
-        ) {
+        public BookingServiceImpl(BookingDao bookingDao,CustomerDao customerDao,DriverDao driverDao,VehicleDao vehicleDao,BillingDao billingDao) {
             this.bookingDao = bookingDao;
             this.customerDao = customerDao;
             this.driverDao = driverDao;
