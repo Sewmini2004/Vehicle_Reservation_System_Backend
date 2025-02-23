@@ -49,7 +49,7 @@
                     throw new SQLException("Vehicle ID not found.");
                 }
                 if (!driverDao.existsById(bookingDTO.getDriverId())) {
-                    throw new SQLException("Driver ID not found.");
+                    throw new SQLException  ("Driver ID not found.");
                 }
 
                 // Convert DTO to Entity and save booking
