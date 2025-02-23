@@ -12,14 +12,15 @@ import java.util.List;
 public class BookingDaoImpl implements BookingDao {
     private Connection connection;
 
-    public BookingDaoImpl() {
-        this.connection = DBConnection.getInstance().getConnection();
+    public BookingDaoImpl(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
-    public boolean saveBooking(BookingEntity booking) {
+    public int saveBooking(BookingEntity booking) {
         String query = "INSERT INTO booking (customerId, vehicleId, driverID, pickupLocation, dropLocation, bookingDate, carType, totalBill) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+
+        try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, booking.getCustomerId());
             stmt.setInt(2, booking.getVehicleId());
             stmt.setInt(3, booking.getDriverId());
@@ -29,13 +30,26 @@ public class BookingDaoImpl implements BookingDao {
             stmt.setString(7, booking.getCarType());
             stmt.setDouble(8, booking.getTotalBill());
 
-            stmt.executeUpdate();
-            return true;
+            int affectedRows = stmt.executeUpdate();
+
+            if (affectedRows == 0) {
+                throw new SQLException("Creating booking failed, no rows affected.");
+            }
+
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    return generatedKeys.getInt(1);  // Retrieve the generated bookingId
+                } else {
+                    throw new SQLException("Creating booking failed, no ID obtained.");
+                }
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
+            return -1;
         }
     }
+
 
     @Override
     public BookingEntity getBookingById(int bookingId) {

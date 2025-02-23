@@ -22,8 +22,8 @@ public class DriverServiceImpl implements DriverService {
     private static final String LICENSE_NUMBER_REGEX = "^[A-Z0-9-]{6,12}$";  // Example for license number format (modify if needed)
     private static final String PHONE_NUMBER_REGEX = "^[0-9]{10}$";  // Assuming 10-digit phone number
 
-    public DriverServiceImpl() {
-        this.driverDao = new DriverDaoImpl();
+    public DriverServiceImpl(DriverDao driverDao) {
+        this.driverDao = driverDao;
     }
 
     @Override

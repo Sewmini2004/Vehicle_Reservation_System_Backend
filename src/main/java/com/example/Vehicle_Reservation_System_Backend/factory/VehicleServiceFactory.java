@@ -1,7 +1,12 @@
 package com.example.Vehicle_Reservation_System_Backend.factory;
 
+import com.example.Vehicle_Reservation_System_Backend.dao.VehicleDao;
+import com.example.Vehicle_Reservation_System_Backend.dao.impl.VehicleDaoImpl;
 import com.example.Vehicle_Reservation_System_Backend.service.VehicleService;
 import com.example.Vehicle_Reservation_System_Backend.service.impl.VehicleServiceImpl;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
+
+import java.sql.Connection;
 
 public class VehicleServiceFactory {
 
@@ -9,7 +14,10 @@ public class VehicleServiceFactory {
 
     public static VehicleService getVehicleService() {
         if (vehicleServiceInstance == null) {
-            vehicleServiceInstance = new VehicleServiceImpl();
+            Connection connection = DBConnection.getInstance().getConnection();
+            VehicleDao vehicleDao = new VehicleDaoImpl(connection);
+
+            vehicleServiceInstance = new VehicleServiceImpl(vehicleDao);
         }
         return vehicleServiceInstance;
     }

@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +24,12 @@ public class BookingServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        bookingService = BookingServiceFactory.getBookingService();
+        try {
+            bookingService = BookingServiceFactory.createBookingService();
+        } catch (SQLException throwables) {
+            System.out.println("LOGG:Booking service creation with service factory");
+            throwables.printStackTrace();
+        }
     }
 
     // CREATE (POST) - Add a new booking

@@ -2,7 +2,7 @@ package com.example.Vehicle_Reservation_System_Backend.dao.impl;
 
 import com.example.Vehicle_Reservation_System_Backend.dao.VehicleDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.VehicleEntity;
-import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
+
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -10,10 +10,11 @@ import java.util.List;
 public class VehicleDaoImpl implements VehicleDao {
     private Connection connection;
 
-    public VehicleDaoImpl() {
-        this.connection = DBConnection.getInstance().getConnection();
+    public VehicleDaoImpl(Connection connection) {
+        this.connection = connection;
     }
 
+    // Keep the connection open for the duration of the operations
     @Override
     public boolean saveVehicle(VehicleEntity vehicleEntity) {
         String query = "INSERT INTO vehicle (carType, model, availabilityStatus, registrationNumber, fuelType, carModel, seatingCapacity) VALUES (?, ?, ?, ?, ?, ?, ?)";
@@ -80,6 +81,7 @@ public class VehicleDaoImpl implements VehicleDao {
         return vehicles;
     }
 
+    // Properly close connections only when necessary
     @Override
     public boolean updateVehicle(VehicleEntity vehicleEntity) {
         String query = "UPDATE vehicle SET carType = ?, model = ?, availabilityStatus = ?, registrationNumber = ?, fuelType = ?, carModel = ?, seatingCapacity = ? WHERE vehicleId = ?";
@@ -99,29 +101,24 @@ public class VehicleDaoImpl implements VehicleDao {
         return false;
     }
 
-
     @Override
     public boolean deleteVehicle(int vehicleId) {
-        // Check if the vehicle exists before deleting
         String queryCheckExistence = "SELECT COUNT(*) FROM vehicle WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, vehicleId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next() && rs.getInt(1) == 0) {
-                System.out.println("Vehicle with ID " + vehicleId + " not found.");
-                return false; // Vehicle does not exist
+                return false; // Vehicle not found
             }
         } catch (SQLException e) {
             e.printStackTrace();
-            return false;
         }
 
-        // Proceed to delete the vehicle
+        // Proceed to delete vehicle
         String query = "DELETE FROM vehicle WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, vehicleId);
-            int rowsAffected = stmt.executeUpdate();
-            return rowsAffected > 0; // Returns true if deletion is successful
+            return stmt.executeUpdate() > 0;
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -130,19 +127,6 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public boolean existsById(int id) {
-        // Check if the vehicle exists before updating
-        String queryCheckExistence = "SELECT COUNT(*) FROM vehicle WHERE  vehicleId= ?";
-        try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
-            stmt.setInt(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next() && rs.getInt(1) == 0) {
-                return false;
-            }
-            return true;
-        } catch (SQLException e) {
-            e.printStackTrace();
-            return false;
-        }
+        return false;
     }
-
 }

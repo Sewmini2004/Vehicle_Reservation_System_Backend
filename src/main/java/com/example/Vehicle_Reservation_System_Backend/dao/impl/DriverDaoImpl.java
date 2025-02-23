@@ -4,7 +4,6 @@ import com.example.Vehicle_Reservation_System_Backend.dao.DriverDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.DriverEntity;
 import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
-import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -12,10 +11,11 @@ import java.util.List;
 
 public class DriverDaoImpl implements DriverDao {
 
-    private Connection connection;
+    private final Connection connection;
 
-    public DriverDaoImpl() {
-        this.connection = DBConnection.getInstance().getConnection();
+    // Constructor to accept the shared Connection instance
+    public DriverDaoImpl(Connection connection) {
+        this.connection = connection;
     }
 
     @Override
@@ -95,7 +95,7 @@ public class DriverDaoImpl implements DriverDao {
         }
 
         // Proceed to update the driver
-        String query = "UPDATE driver SET  name = ?, licenseNumber = ?, status = ?, shiftTiming = ?, salary = ?, experienceYears = ?, phoneNumber = ? WHERE driverId = ?";
+        String query = "UPDATE driver SET name = ?, licenseNumber = ?, status = ?, shiftTiming = ?, salary = ?, experienceYears = ?, phoneNumber = ? WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, driverEntity.getName());
             stmt.setString(2, driverEntity.getLicenseNumber());
@@ -171,10 +171,7 @@ public class DriverDaoImpl implements DriverDao {
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
-            if (rs.next() && rs.getInt(1) == 0) {
-                return false;
-            }
-            return true;
+            return rs.next() && rs.getInt(1) > 0;
         } catch (SQLException e) {
             e.printStackTrace();
             return false;

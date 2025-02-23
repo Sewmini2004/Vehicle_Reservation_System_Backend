@@ -12,7 +12,11 @@ public class DBConnection {
         System.out.println("LOG::DBConnection::Constructor:Started");
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/vehicle_reservation?useSSL=false", "root", "1234");
+            connection = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/vehicle_reservation?useSSL=false",
+                    "root",
+                    "1234"
+            );
         } catch (SQLException | ClassNotFoundException throwables) {
             System.out.println("LOG::DBConnection::Constructor:An error occured while creating db connection.\nmessage: "+throwables.getMessage());
             throwables.printStackTrace();
@@ -22,8 +26,12 @@ public class DBConnection {
     }
 
     public static DBConnection getInstance() {
-        if (dbConnection == null) {
-            dbConnection = new DBConnection();
+        try {
+            if (dbConnection == null || dbConnection.getConnection().isClosed()) {
+                dbConnection = new DBConnection();
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
         }
         return dbConnection;
     }
