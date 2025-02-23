@@ -15,8 +15,8 @@ public class VehicleServiceImpl implements VehicleService {
 
     private VehicleDao vehicleDao;
 
-    public VehicleServiceImpl() {
-        this.vehicleDao = new VehicleDaoImpl();
+    public VehicleServiceImpl(VehicleDao vehicleDao) {
+        this.vehicleDao = vehicleDao;
     }
 
     @Override

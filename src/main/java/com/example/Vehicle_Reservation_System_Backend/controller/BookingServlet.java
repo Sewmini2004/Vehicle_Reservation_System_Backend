@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -23,7 +24,12 @@ public class BookingServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        bookingService = BookingServiceFactory.getBookingService();
+        try {
+            bookingService = BookingServiceFactory.createBookingService();
+        } catch (SQLException throwables) {
+            System.out.println("LOGG:Booking service creation with service factory");
+            throwables.printStackTrace();
+        }
     }
 
     // CREATE (POST) - Add a new booking
@@ -67,37 +73,35 @@ public class BookingServlet extends HttpServlet {
                 BookingDTO booking = bookingService.getBookingById(bookingId);
 
                 if (booking != null) {
+                    // Set the response content type to JSON
+                    response.setContentType("application/json");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write("Booking found: Customer " + booking.getCustomerId() + ", Vehicle " + booking.getVehicleId() + ", Total Bill: " + booking.getTotalBill());
+                    // Convert the booking DTO to JSON
+                    response.getWriter().write(JsonUtils.convertDtoToJson(booking));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.getWriter().write("Booking not found.");
+                    response.getWriter().write("{\"Error\" : \"Booking not found.\"}");
                 }
             } else {
                 // Fetch all bookings if no ID is provided
                 List<BookingDTO> bookings = bookingService.getAllBookings();
 
                 if (!bookings.isEmpty()) {
+                    response.setContentType("application/json");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    StringBuilder responseText = new StringBuilder("Booking List:\n");
-                    for (BookingDTO booking : bookings) {
-                        responseText.append("ID: ").append(booking.getBookingId())
-                                .append(", Customer: ").append(booking.getCustomerId())
-                                .append(", Vehicle: ").append(booking.getVehicleId())
-                                .append(", Total Bill: ").append(booking.getTotalBill()).append("\n");
-                    }
-                    response.getWriter().write(responseText.toString());
+                    // Convert the list of bookings to JSON
+                    response.getWriter().write(JsonUtils.convertDtoToJson(bookings));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                    response.getWriter().write("No bookings available.");
+                    response.getWriter().write("{\"Message\" : \"No bookings available.\"}");
                 }
             }
         } catch (NumberFormatException e) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Invalid booking ID format.");
+            response.getWriter().write("{\"Error\" : \"Invalid booking ID format.\"}");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error retrieving booking details.");
+            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving booking details.\"}");
         }
     }
 

@@ -14,8 +14,8 @@ public class CustomerDaoImpl implements CustomerDao {
 
     private Connection connection;
 
-    public CustomerDaoImpl() {
-        this.connection = DBConnection.getInstance().getConnection();
+    public CustomerDaoImpl(Connection connection) {
+        this.connection = connection;
     }
 
     @Override

@@ -25,8 +25,8 @@ public class CustomerServiceImpl implements CustomerService {
     private static final String EMAIL_REGEX = "^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$";
     private static final String NIC_REGEX = "^(?:19|20)?\\d{2}[0-9]{10}|[0-9]{9}[x|X|v|V]$";
 
-    public CustomerServiceImpl() {
-        this.customerDao = new CustomerDaoImpl();
+    public CustomerServiceImpl(CustomerDao customerDao) {
+        this.customerDao = customerDao;
     }
 
     @Override

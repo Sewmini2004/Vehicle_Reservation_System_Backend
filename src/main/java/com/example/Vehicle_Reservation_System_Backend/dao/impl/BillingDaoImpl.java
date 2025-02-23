@@ -2,17 +2,22 @@ package com.example.Vehicle_Reservation_System_Backend.dao.impl;
 
 import com.example.Vehicle_Reservation_System_Backend.dao.BillingDao;
 import com.example.Vehicle_Reservation_System_Backend.dto.BillingDTO;
-import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.*;
 
 public class BillingDaoImpl implements BillingDao {
 
+    private final Connection connection;
+
+    // Constructor to accept shared Connection instance
+    public BillingDaoImpl(Connection connection) {
+        this.connection = connection;
+    }
+
     @Override
     public BillingDTO getBillByBookingId(int bookingId) throws SQLException {
         String query = "SELECT * FROM Billing WHERE bookingId = ?";
-        try (Connection connection = DBConnection.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setInt(1, bookingId);
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -41,8 +46,7 @@ public class BillingDaoImpl implements BillingDao {
     public boolean saveBill(int bookingId, double totalAmount, double taxAmount, double discountAmount, double finalAmount, String paymentMethod, String paymentStatus) throws SQLException {
         String query = "INSERT INTO Billing (bookingId, totalAmount, taxAmount, discountAmount, finalAmount, paymentMethod, paymentStatus) VALUES (?, ?, ?, ?, ?, ?, ?)";
 
-        try (Connection connection = DBConnection.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setInt(1, bookingId);
             preparedStatement.setDouble(2, totalAmount);
@@ -64,8 +68,7 @@ public class BillingDaoImpl implements BillingDao {
     public boolean updateBill(int bookingId, double totalAmount, double taxAmount, double discountAmount, double finalAmount, String paymentMethod, String paymentStatus) throws SQLException {
         String query = "UPDATE Billing SET totalAmount = ?, taxAmount = ?, discountAmount = ?, finalAmount = ?, paymentMethod = ?, paymentStatus = ? WHERE bookingId = ?";
 
-        try (Connection connection = DBConnection.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setDouble(1, totalAmount);
             preparedStatement.setDouble(2, taxAmount);
@@ -87,8 +90,7 @@ public class BillingDaoImpl implements BillingDao {
     public boolean deleteBill(int bookingId) throws SQLException {
         String query = "DELETE FROM Billing WHERE bookingId = ?";
 
-        try (Connection connection = DBConnection.getInstance().getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
 
             preparedStatement.setInt(1, bookingId);
             int rowsAffected = preparedStatement.executeUpdate();
@@ -100,6 +102,4 @@ public class BillingDaoImpl implements BillingDao {
             throw new SQLException("Error deleting billing information for booking ID " + bookingId, e);
         }
     }
-
-
 }
