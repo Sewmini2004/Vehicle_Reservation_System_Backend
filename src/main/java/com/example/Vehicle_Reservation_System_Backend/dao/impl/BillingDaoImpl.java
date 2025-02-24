@@ -4,6 +4,8 @@ import com.example.Vehicle_Reservation_System_Backend.dao.BillingDao;
 import com.example.Vehicle_Reservation_System_Backend.dto.BillingDTO;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BillingDaoImpl implements BillingDao {
 
@@ -100,6 +102,33 @@ public class BillingDaoImpl implements BillingDao {
         } catch (SQLException e) {
             e.printStackTrace();
             throw new SQLException("Error deleting billing information for booking ID " + bookingId, e);
+        }
+    }
+
+
+
+    @Override
+    public List<BillingDTO> getAllBills() throws SQLException {
+        String query = "SELECT * FROM Billing";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            ResultSet resultSet = preparedStatement.executeQuery();
+            List<BillingDTO> billingList = new ArrayList<>();
+
+            while (resultSet.next()) {
+                BillingDTO billingDTO = new BillingDTO(
+                        resultSet.getInt("billId"),
+                        resultSet.getInt("bookingId"),
+                        resultSet.getDouble("totalAmount"),
+                        resultSet.getDouble("discountAmount"),
+                        resultSet.getDouble("taxAmount"),
+                        resultSet.getDouble("finalAmount"),
+                        resultSet.getString("paymentMethod"),
+                        resultSet.getString("paymentStatus"),
+                        resultSet.getTimestamp("createdAt")
+                );
+                billingList.add(billingDTO);
+            }
+            return billingList;
         }
     }
 }
