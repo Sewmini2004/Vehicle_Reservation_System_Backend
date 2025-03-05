@@ -10,6 +10,7 @@ import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
 import com.example.Vehicle_Reservation_System_Backend.utils.CustomerConverter;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 import com.example.Vehicle_Reservation_System_Backend.utils.VehicleConverter;
 
 import java.sql.SQLException;
@@ -92,6 +93,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerDTO> getAllCustomers() {
+        DBConnection.getInstance().getConnection();
         List<CustomerEntity> customerEntities = customerDao.getAllCustomers();
         return customerEntities.stream().map(CustomerConverter::convertToDTO).collect(Collectors.toList());
     }
