@@ -5,6 +5,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -45,10 +47,19 @@ public class JsonUtils {
 
                 json.append("\"").append(key).append("\":");
 
-                if (value instanceof String) {
+                // Handle null values properly
+                if (value == null) {
+                    json.append("null");
+                } else if (value instanceof String) {
                     json.append("\"").append(value).append("\"");
+                } else if (value instanceof Boolean || value instanceof Number) {
+                    json.append(value);  // Properly handle boolean or numeric values
+                } else if (value instanceof Date) {
+                    // Format Date as ISO 8601 string
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+                    json.append("\"").append(sdf.format((Date) value)).append("\"");
                 } else {
-                    json.append(value);
+                    json.append(convertDtoToJson(value));  // Handle nested objects or complex types
                 }
 
                 if (i < fields.length - 1) {
@@ -62,8 +73,6 @@ public class JsonUtils {
         return json.toString();
     }
 
-
-
     public static String getJsonFromRequest(HttpServletRequest request) throws IOException {
         StringBuilder jsonBuffer = new StringBuilder();
         String line;
@@ -74,6 +83,7 @@ public class JsonUtils {
         }
         return jsonBuffer.toString();
     }
+
     public static String extractJsonValue(String json, String key) {
         // Regex pattern to match both string and numeric values
         String pattern = "\""+ key +"\"\\s*:\\s*(\"(.*?)\"|([\\d.]+)|true|false|null)";
@@ -85,5 +95,4 @@ public class JsonUtils {
         }
         return null;
     }
-
 }
