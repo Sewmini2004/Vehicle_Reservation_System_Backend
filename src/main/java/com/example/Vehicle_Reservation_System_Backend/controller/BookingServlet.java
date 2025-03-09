@@ -2,8 +2,10 @@ package com.example.Vehicle_Reservation_System_Backend.controller;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.BookingDTO;
 import com.example.Vehicle_Reservation_System_Backend.exception.DateFormatException;
+import com.example.Vehicle_Reservation_System_Backend.factory.VehicleServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.BookingService;
 import com.example.Vehicle_Reservation_System_Backend.factory.BookingServiceFactory;
+import com.example.Vehicle_Reservation_System_Backend.service.VehicleService;
 import com.example.Vehicle_Reservation_System_Backend.utils.DateFormatUtils;
 import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
 import jakarta.servlet.ServletException;
@@ -21,13 +23,16 @@ import java.util.List;
 @WebServlet("/booking")
 public class BookingServlet extends HttpServlet {
     private BookingService bookingService;
+    private VehicleService vehicleService;
 
     @Override
     public void init() throws ServletException {
         try {
+            vehicleService = VehicleServiceFactory.getVehicleService();
             bookingService = BookingServiceFactory.createBookingService();
         } catch (SQLException throwables) {
             System.out.println("LOGG:Booking service creation with service factory");
+            System.out.println("LOGG:vehicle service creation with service factory");
             throwables.printStackTrace();
         }
     }
@@ -36,28 +41,52 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
+            // Retrieve JSON data from the request
             String jsonData = JsonUtils.getJsonFromRequest(request);
 
-            int customerId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "customerId"));
+            // Parse and extract vehicleId from the request data
             int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
+
+            // Ensure that the vehicle exists in the database
+            if (!vehicleService.existsById(vehicleId)) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"Error\": \"Vehicle ID not found.\"}");
+                return;
+            }
+
+            // Extract other booking details from the request
+            int customerId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "customerId"));
             int driverId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "driverId"));
             String pickupLocation = JsonUtils.extractJsonValue(jsonData, "pickupLocation");
             String dropLocation = JsonUtils.extractJsonValue(jsonData, "dropLocation");
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
             double totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
 
+            // Create a BookingDTO object from the extracted data
             BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill);
 
-            if (bookingService.addBooking(bookingDTO)) {
+            // Call the service method to add the booking
+            boolean isBookingCreated = bookingService.addBooking(bookingDTO);
+            if (isBookingCreated) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write("Booking successfully created.");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"Message\": \"Booking successfully created.\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("Error creating booking.");
+                response.setContentType("application/json");
+                response.getWriter().write("{\"Error\": \"Error creating booking.\"}");
             }
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
+            // Catch number format exceptions and return appropriate message
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("Invalid booking data: " + e.getMessage());
+            response.setContentType("application/json");
+            response.getWriter().write("{\"Error\": \"Invalid number format: " + e.getMessage() + "\"}");
+        } catch (Exception e) {
+            // Catch any other exceptions and return appropriate message
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"Error\": \"Invalid booking data: " + e.getMessage() + "\"}");
         }
     }
 
@@ -110,7 +139,6 @@ public class BookingServlet extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String jsonData = JsonUtils.getJsonFromRequest(request);
-
             int bookingId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "bookingId"));
 
             // Fetch existing booking details to retain the original booking date
@@ -141,11 +169,10 @@ public class BookingServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("Booking cannot be updated after 2 hours.");
             }
-        } catch (DateFormatException ex){
+        } catch (DateFormatException ex) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{ \"Message\": "+ ex.getMessage() + "}");
-        }
-        catch (Exception e) {
+            response.getWriter().write("{ \"Message\": \"" + ex.getMessage() + "\"}");
+        } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             response.getWriter().write("Error updating booking: " + e.getMessage());
         }

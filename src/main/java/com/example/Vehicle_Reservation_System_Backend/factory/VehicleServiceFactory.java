@@ -7,12 +7,13 @@ import com.example.Vehicle_Reservation_System_Backend.service.impl.VehicleServic
 import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.Connection;
+import java.sql.SQLException;
 
 public class VehicleServiceFactory {
 
     private static VehicleService vehicleServiceInstance;
 
-    public static VehicleService getVehicleService() {
+    public static VehicleService getVehicleService() throws SQLException {
         if (vehicleServiceInstance == null) {
             Connection connection = DBConnection.getInstance().getConnection();
             VehicleDao vehicleDao = new VehicleDaoImpl(connection);

@@ -10,4 +10,5 @@ public interface VehicleService {
     List<VehicleDTO> getAllVehicles();
     boolean updateVehicle(VehicleDTO vehicleDTO);
     boolean deleteVehicle(int vehicleId);
+    boolean existsById(int vehicleId);
 }

@@ -50,4 +50,12 @@ public class VehicleServiceImpl implements VehicleService {
     public boolean deleteVehicle(int vehicleId) {
         return vehicleDao.deleteVehicle(vehicleId);
     }
+
+
+    @Override
+    public boolean existsById(int vehicleId) {
+        VehicleEntity vehicleEntity = vehicleDao.getById(vehicleId);
+        return vehicleEntity != null;
+    }
+
 }

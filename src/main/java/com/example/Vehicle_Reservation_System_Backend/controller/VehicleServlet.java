@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 
 @WebServlet("/vehicle")
@@ -20,7 +21,11 @@ public class VehicleServlet extends HttpServlet {
 
     @Override
     public void init() throws ServletException {
-        vehicleService = VehicleServiceFactory.getVehicleService();
+        try {
+            vehicleService = VehicleServiceFactory.getVehicleService();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
     // CREATE (POST) - Add a new vehicle
