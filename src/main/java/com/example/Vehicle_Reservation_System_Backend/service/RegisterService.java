@@ -11,4 +11,6 @@ public interface RegisterService {
     boolean updateUser(RegisterDTO registerDTO);
     boolean deleteUser(int userId);
     List<RegisterDTO> getAllUsers();
+    RegisterDTO getUserByUsername(String username);
+
 }

@@ -129,4 +129,27 @@ public class RegisterDaoImpl implements RegisterDao {
         }
         return users;
     }
+
+    @Override
+    public RegisterEntity getByUsername(String username) {
+        String query = "SELECT * FROM user WHERE username = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return new RegisterEntity(
+                        rs.getInt("userId"),
+                        rs.getString("username"),
+                        rs.getString("password"),
+                        rs.getString("firstName"),
+                        rs.getString("lastName"),
+                        rs.getString("email")
+                );
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
 }
