@@ -83,6 +83,7 @@ public class CustomerDaoImpl implements CustomerDao {
     @Override
     public boolean existsById(int id) {
         // Check if the customer exists before updating
+        connection = DBConnection.getInstance().getConnection();
         String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, id);

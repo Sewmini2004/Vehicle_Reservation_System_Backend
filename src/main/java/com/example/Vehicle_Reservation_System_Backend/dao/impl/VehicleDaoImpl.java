@@ -2,6 +2,7 @@ package com.example.Vehicle_Reservation_System_Backend.dao.impl;
 
 import com.example.Vehicle_Reservation_System_Backend.dao.VehicleDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.VehicleEntity;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public VehicleEntity getById(int vehicleId) {
+        connection = DBConnection.getInstance().getConnection();
         String query = "SELECT * FROM vehicle WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, vehicleId);
@@ -127,6 +129,18 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public boolean existsById(int id) {
-        return false;
+        connection = DBConnection.getInstance().getConnection();
+        String queryCheckExistence = "SELECT COUNT(*) FROM vehicle WHERE vehicleId = ?";
+        try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
+            stmt.setInt(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next() && rs.getInt(1) == 0) {
+                return false;
+            }
+            return true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

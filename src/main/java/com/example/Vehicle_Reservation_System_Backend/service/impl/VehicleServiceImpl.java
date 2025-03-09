@@ -27,6 +27,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleDTO getVehicleById(int vehicleId) {
+        System.out.println("vehicleId  :::: " +vehicleId);
         VehicleEntity vehicleEntity = vehicleDao.getById(vehicleId);
         if (vehicleEntity == null) {
             throw new NotFoundException("Vehicle with ID " + vehicleId + " not found.");

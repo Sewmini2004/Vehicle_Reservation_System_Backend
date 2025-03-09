@@ -6,6 +6,7 @@ import com.example.Vehicle_Reservation_System_Backend.factory.VehicleServiceFact
 import com.example.Vehicle_Reservation_System_Backend.service.BookingService;
 import com.example.Vehicle_Reservation_System_Backend.factory.BookingServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.VehicleService;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 import com.example.Vehicle_Reservation_System_Backend.utils.DateFormatUtils;
 import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
 import jakarta.servlet.ServletException;
@@ -43,11 +44,12 @@ public class BookingServlet extends HttpServlet {
         try {
             // Retrieve JSON data from the request
             String jsonData = JsonUtils.getJsonFromRequest(request);
-
+            System.out.println("jsonData:"+jsonData);
             // Parse and extract vehicleId from the request data
             int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
-
             // Ensure that the vehicle exists in the database
+            System.out.println("Vehicle ID : "+ vehicleId);
+            DBConnection.getInstance().getConnection();
             if (!vehicleService.existsById(vehicleId)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("application/json");
@@ -78,11 +80,11 @@ public class BookingServlet extends HttpServlet {
                 response.getWriter().write("{\"Error\": \"Error creating booking.\"}");
             }
         } catch (NumberFormatException e) {
-            // Catch number format exceptions and return appropriate message
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
             response.setContentType("application/json");
             response.getWriter().write("{\"Error\": \"Invalid number format: " + e.getMessage() + "\"}");
         } catch (Exception e) {
+            e.printStackTrace();
             // Catch any other exceptions and return appropriate message
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");
