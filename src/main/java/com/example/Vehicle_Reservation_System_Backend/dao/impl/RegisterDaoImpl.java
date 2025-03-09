@@ -29,7 +29,7 @@ public class RegisterDaoImpl implements RegisterDao {
         }
 
         // Insert new user
-        String query = "INSERT INTO user (userId, username, password, firstName, lastName, email, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO user (userId, username, password, firstName, lastName, email) VALUES (?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, registerEntity.getUserId());
             stmt.setString(2, registerEntity.getUsername());
@@ -37,8 +37,6 @@ public class RegisterDaoImpl implements RegisterDao {
             stmt.setString(4, registerEntity.getFirstName());
             stmt.setString(5, registerEntity.getLastName());
             stmt.setString(6, registerEntity.getEmail());
-            stmt.setString(7, registerEntity.getCreatedAt());
-
             stmt.executeUpdate();
             return true;
         }
@@ -57,8 +55,7 @@ public class RegisterDaoImpl implements RegisterDao {
                         rs.getString("password"),
                         rs.getString("firstName"),
                         rs.getString("lastName"),
-                        rs.getString("email"),
-                        rs.getString("createdAt")
+                        rs.getString("email")
                 );
             } else {
                 throw new NotFoundException("User not found.");
@@ -124,8 +121,7 @@ public class RegisterDaoImpl implements RegisterDao {
                         rs.getString("password"),
                         rs.getString("firstName"),
                         rs.getString("lastName"),
-                        rs.getString("email"),
-                        rs.getString("createdAt")
+                        rs.getString("email")
                 ));
             }
         } catch (SQLException e) {

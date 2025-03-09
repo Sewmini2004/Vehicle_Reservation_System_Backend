@@ -5,9 +5,14 @@ import com.example.Vehicle_Reservation_System_Backend.dto.RegisterDTO;
 import com.example.Vehicle_Reservation_System_Backend.entity.RegisterEntity;
 import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.service.RegisterService;
+import com.example.Vehicle_Reservation_System_Backend.utils.RegisterConverter;
+import static com.example.Vehicle_Reservation_System_Backend.utils.RegisterConverter.convertToDTO;
+import static com.example.Vehicle_Reservation_System_Backend.utils.RegisterConverter.convertToEntity;
+
 import java.sql.SQLException;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 public class RegisterServiceImpl implements RegisterService {
     private RegisterDao registerDao;
@@ -21,13 +26,13 @@ public class RegisterServiceImpl implements RegisterService {
         if (existsByUsername(registerDTO.getUsername())) {
             throw new AlreadyException("Username already exists.");
         }
-        RegisterEntity registerEntity = com.example.Vehicle_Reservation_System_Backend.converter.RegisterConverter.convertToEntity(registerDTO);
+        RegisterEntity registerEntity = convertToEntity(registerDTO);
         return registerDao.saveUser(registerEntity);
     }
 
     @Override
     public RegisterDTO getUserById(int userId) {
-        return com.example.Vehicle_Reservation_System_Backend.converter.RegisterConverter.convertToDTO(registerDao.getById(userId));
+        return convertToDTO(registerDao.getById(userId));
     }
 
     @Override
@@ -37,7 +42,7 @@ public class RegisterServiceImpl implements RegisterService {
 
     @Override
     public boolean updateUser(RegisterDTO registerDTO) {
-        RegisterEntity registerEntity = com.example.Vehicle_Reservation_System_Backend.converter.RegisterConverter.convertToEntity(registerDTO);
+        RegisterEntity registerEntity = convertToEntity(registerDTO);
         return registerDao.updateUser(registerEntity);
     }
 
@@ -49,7 +54,7 @@ public class RegisterServiceImpl implements RegisterService {
     @Override
     public List<RegisterDTO> getAllUsers() {
         return registerDao.getAllUsers().stream()
-                .map(com.example.Vehicle_Reservation_System_Backend.converter.RegisterConverter::convertToDTO)
+                .map(RegisterConverter::convertToDTO)
                 .collect(Collectors.toList());
     }
 }

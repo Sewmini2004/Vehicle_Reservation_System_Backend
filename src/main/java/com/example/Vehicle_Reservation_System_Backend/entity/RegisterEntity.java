@@ -7,17 +7,15 @@ public class RegisterEntity {
     private String firstName;
     private String lastName;
     private String email;
-    private String createdAt;
 
 
-    public RegisterEntity(int userId, String username, String password, String firstName, String lastName, String email, String createdAt) {
+    public RegisterEntity(int userId, String username, String password, String firstName, String lastName, String email) {
         this.userId = userId;
         this.username = username;
         this.password = password;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.createdAt = createdAt;
     }
 
 
@@ -72,11 +70,5 @@ public class RegisterEntity {
         this.email = email;
     }
 
-    public String getCreatedAt() {
-        return createdAt;
-    }
 
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
 }

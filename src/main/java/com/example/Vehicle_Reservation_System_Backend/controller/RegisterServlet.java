@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 @WebServlet("/register")
@@ -52,9 +53,10 @@ public class RegisterServlet extends HttpServlet {
             String username = JsonUtils.extractJsonValue(jsonData, "username");
             String password = JsonUtils.extractJsonValue(jsonData, "password");
             String firstName = JsonUtils.extractJsonValue(jsonData, "firstName");
+            System.out.println("FirstName :::::: " + firstName);
             String lastName = JsonUtils.extractJsonValue(jsonData, "lastName");
+            System.out.println("lastName :::::: " + lastName);
             String email = JsonUtils.extractJsonValue(jsonData, "email");
-            String createdAt = JsonUtils.extractJsonValue(jsonData, "createdAt");
 
             // Validate required fields
             if (username == null || username.isEmpty() || password == null || password.isEmpty() || email == null || email.isEmpty()) {
@@ -64,7 +66,7 @@ public class RegisterServlet extends HttpServlet {
             }
 
             // Create DTO object
-            RegisterDTO registerDTO = new RegisterDTO(userId, username, password, firstName, lastName, email, createdAt);
+            RegisterDTO registerDTO = new RegisterDTO(userId, username, password, firstName, lastName, email);
 
             // Check if user already exists
             if (registerService.existsByUsername(username)) {

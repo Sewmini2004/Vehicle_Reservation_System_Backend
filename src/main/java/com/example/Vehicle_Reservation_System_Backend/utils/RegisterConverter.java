@@ -1,4 +1,4 @@
-package com.example.Vehicle_Reservation_System_Backend.converter;
+package com.example.Vehicle_Reservation_System_Backend.utils;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.RegisterDTO;
 import com.example.Vehicle_Reservation_System_Backend.entity.RegisterEntity;
@@ -12,9 +12,9 @@ public class RegisterConverter {
                 registerEntity.getPassword(),
                 registerEntity.getFirstName(),
                 registerEntity.getLastName(),
-                registerEntity.getEmail(),
-                registerEntity.getCreatedAt()
-        );
+                registerEntity.getEmail()
+
+                );
     }
 
     public static RegisterEntity convertToEntity(RegisterDTO registerDTO) {
@@ -24,8 +24,7 @@ public class RegisterConverter {
                 registerDTO.getPassword(),
                 registerDTO.getFirstName(),
                 registerDTO.getLastName(),
-                registerDTO.getEmail(),
-                registerDTO.getCreatedAt()
+                registerDTO.getEmail()
         );
     }
 }
