@@ -57,4 +57,14 @@ public class RegisterServiceImpl implements RegisterService {
                 .map(RegisterConverter::convertToDTO)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public RegisterDTO getUserByUsername(String username) {
+        RegisterEntity userEntity = registerDao.getByUsername(username);
+        if (userEntity != null) {
+            return RegisterConverter.convertToDTO(userEntity);
+        }
+        return null;
+    }
+
 }

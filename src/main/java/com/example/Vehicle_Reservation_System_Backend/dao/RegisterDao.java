@@ -11,4 +11,6 @@ public interface RegisterDao {
     List<RegisterEntity> getAllUsers();
     RegisterEntity getById(int userId);
     boolean existsByUsername(String username);
+    RegisterEntity getByUsername(String username);
+
 }
