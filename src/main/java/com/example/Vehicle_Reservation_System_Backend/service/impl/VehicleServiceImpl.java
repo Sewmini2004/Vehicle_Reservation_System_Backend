@@ -27,6 +27,7 @@ public class VehicleServiceImpl implements VehicleService {
 
     @Override
     public VehicleDTO getVehicleById(int vehicleId) {
+        System.out.println("vehicleId  :::: " +vehicleId);
         VehicleEntity vehicleEntity = vehicleDao.getById(vehicleId);
         if (vehicleEntity == null) {
             throw new NotFoundException("Vehicle with ID " + vehicleId + " not found.");
@@ -50,4 +51,12 @@ public class VehicleServiceImpl implements VehicleService {
     public boolean deleteVehicle(int vehicleId) {
         return vehicleDao.deleteVehicle(vehicleId);
     }
+
+
+    @Override
+    public boolean existsById(int vehicleId) {
+        VehicleEntity vehicleEntity = vehicleDao.getById(vehicleId);
+        return vehicleEntity != null;
+    }
+
 }
