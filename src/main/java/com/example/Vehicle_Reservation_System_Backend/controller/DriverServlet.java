@@ -16,7 +16,7 @@ import java.util.List;
 @WebServlet("/driver")
 public class DriverServlet extends HttpServlet {
 
-    private DriverService driverService;
+    public DriverService driverService;
 
     @Override
     public void init() throws ServletException {
