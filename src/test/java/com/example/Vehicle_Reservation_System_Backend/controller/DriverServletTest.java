@@ -40,8 +40,8 @@ public class DriverServletTest {
 
         driverServlet.doPost(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_CREATED);
-        verify(writerMock).write("Driver added successfully.");
+        verify(responseMock).setStatus(HttpServletResponse.SC_CREATED); // Ensure setStatus(201)
+        verify(writerMock).write("{\"Message\" : \"Driver added successfully.\"}");
     }
 
     @Test
@@ -52,8 +52,8 @@ public class DriverServletTest {
 
         driverServlet.doPost(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        verify(writerMock).write("Missing required fields.");
+        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure setStatus(400)
+        verify(writerMock).write("{\"Error\" : \"Missing required fields.\"}");
     }
 
     @Test
@@ -64,8 +64,9 @@ public class DriverServletTest {
 
         driverServlet.doPost(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-      //  verify(writerMock).write(": For input string: \"\"");
+        // The error message now reflects the actual issue with the input "five"
+        verify(responseMock).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Ensure setStatus(500)
+        verify(writerMock).write("{\"Error\" : \"Error adding driver: For input string: \"five\"\"}");
     }
 
     @Test
@@ -77,7 +78,7 @@ public class DriverServletTest {
 
         driverServlet.doGet(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK);
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK); // Ensure setStatus(200)
         verify(writerMock).write(anyString());  // Verify that the driver is written as JSON
     }
 
@@ -87,7 +88,7 @@ public class DriverServletTest {
 
         driverServlet.doGet(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure setStatus(400)
         verify(writerMock).write("{\"Error\" : \"Invalid driver ID format.\"}");
     }
 
@@ -99,8 +100,8 @@ public class DriverServletTest {
 
         driverServlet.doDelete(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK);
-        verify(writerMock).write("Driver deleted successfully!");
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK); // Ensure setStatus(200)
+        verify(writerMock).write("{\"Message\" : \"Driver deleted successfully!\"}");
     }
 
     @Test
@@ -111,8 +112,8 @@ public class DriverServletTest {
 
         driverServlet.doDelete(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_NOT_FOUND);
-        verify(writerMock).write("Error deleting driver.");
+        verify(responseMock).setStatus(HttpServletResponse.SC_NOT_FOUND); // Ensure setStatus(404)
+        verify(writerMock).write("{\"Error\" : \"Driver not found.\"}");
     }
 
     @Test
@@ -124,8 +125,8 @@ public class DriverServletTest {
 
         driverServlet.doPut(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK);
-        verify(writerMock).write("Driver updated successfully!");
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK); // Ensure setStatus(200)
+        verify(writerMock).write("{\"Message\" : \"Driver updated successfully!\"}");
     }
 
     @Test
@@ -136,7 +137,8 @@ public class DriverServletTest {
 
         driverServlet.doPut(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        verify(writerMock).write("Error updating driver.");
+        // The error message now reflects the actual issue with the input "six"
+        verify(responseMock).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Ensure setStatus(500)
+        verify(writerMock).write("{\"Error\" : \"Error updating driver: For input string: \"six\"\"}");
     }
 }
