@@ -14,7 +14,7 @@ import java.io.IOException;
 
 @WebServlet("/login")
 public class LoginServlet extends HttpServlet {
-    private RegisterService registerService;
+    public RegisterService registerService;
 
     @Override
     public void init() throws ServletException {
