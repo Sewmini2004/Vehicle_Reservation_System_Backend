@@ -17,7 +17,7 @@ import java.util.List;
 @WebServlet("/vehicle")
 public class VehicleServlet extends HttpServlet {
 
-    private VehicleService vehicleService;
+    public VehicleService vehicleService;
 
     @Override
     public void init() throws ServletException {
@@ -41,6 +41,7 @@ public class VehicleServlet extends HttpServlet {
             String carModel = JsonUtils.extractJsonValue(jsonData, "carModel");
             int seatingCapacity = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "seatingCapacity"));
 
+            // Check for missing required fields
             if (carType == null || model == null || registrationNumber == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.getWriter().write("Missing required fields.");
@@ -50,10 +51,10 @@ public class VehicleServlet extends HttpServlet {
             VehicleDTO vehicle = new VehicleDTO(0, carType, model, availabilityStatus, registrationNumber, fuelType, carModel, seatingCapacity);
 
             if (vehicleService.addVehicle(vehicle)) {
-                response.setStatus(HttpServletResponse.SC_CREATED);
+                response.setStatus(HttpServletResponse.SC_CREATED); // Success - 201
                 response.getWriter().write("Vehicle added successfully.");
             } else {
-                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
                 response.getWriter().write("Error adding vehicle.");
             }
         } catch (Exception e) {
@@ -62,6 +63,7 @@ public class VehicleServlet extends HttpServlet {
         }
     }
 
+    // READ (GET) - Fetch vehicle details by ID or all vehicles
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -73,11 +75,10 @@ public class VehicleServlet extends HttpServlet {
                 VehicleDTO vehicle = vehicleService.getVehicleById(vehicleId);
 
                 if (vehicle != null) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    // Returning the vehicle as JSON in the desired format
-                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicle));
+                    response.setStatus(HttpServletResponse.SC_OK); // Success - 200
+                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicle)); // Return vehicle as JSON
                 } else {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Failure - 404
                     response.getWriter().write("{\"Error\" : \"Vehicle not found.\"}");
                 }
             } else {
@@ -85,19 +86,18 @@ public class VehicleServlet extends HttpServlet {
                 List<VehicleDTO> vehicles = vehicleService.getAllVehicles();
 
                 if (!vehicles.isEmpty()) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    // Returning all vehicles as JSON in the desired format
-                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicles));
+                    response.setStatus(HttpServletResponse.SC_OK); // Success - 200
+                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicles)); // Return all vehicles as JSON
                 } else {
-                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT); // No Content - 204
                     response.getWriter().write("{\"Message\" : \"No vehicles available.\"}");
                 }
             }
         } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Failure - 400
             response.getWriter().write("{\"Error\" : \"Invalid vehicle ID format.\"}");
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
             response.getWriter().write("{\"Error\" : \"An error occurred while retrieving vehicle details.\"}");
         }
     }
@@ -119,12 +119,14 @@ public class VehicleServlet extends HttpServlet {
             VehicleDTO vehicle = new VehicleDTO(vehicleId, carType, model, availabilityStatus, registrationNumber, fuelType, carModel, seatingCapacity);
 
             if (vehicleService.updateVehicle(vehicle)) {
+                response.setStatus(HttpServletResponse.SC_OK); // Success - 200
                 response.getWriter().write("Vehicle updated successfully!");
             } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
                 response.getWriter().write("Error updating vehicle.");
             }
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
             response.getWriter().write("Error updating vehicle.");
         }
     }
@@ -136,12 +138,14 @@ public class VehicleServlet extends HttpServlet {
             int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
 
             if (vehicleService.deleteVehicle(vehicleId)) {
+                response.setStatus(HttpServletResponse.SC_OK); // Success - 200
                 response.getWriter().write("Vehicle deleted successfully!");
             } else {
-                response.getWriter().write("Error deleting vehicle.");
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Failure - 404
+                response.getWriter().write("Vehicle not found.");
             }
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
             response.getWriter().write("Error deleting vehicle.");
         }
     }
