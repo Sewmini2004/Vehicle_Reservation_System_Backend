@@ -52,8 +52,12 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO getCustomerById(int customerId) {
         CustomerEntity customerEntity = customerDao.getById(customerId);
+        if (customerEntity == null) {
+            throw new NotFoundException("Customer not found with ID: " + customerId);
+        }
         return CustomerConverter.convertToDTO(customerEntity);
     }
+
 
     @Override
     public boolean existsById(int customerId) {
@@ -82,14 +86,19 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
+
     @Override
     public boolean deleteCustomer(int customerId) {
-        try {
-            return customerDao.deleteCustomer(customerId);
-        } catch (NotFoundException e) {
-            throw e;  // Propagate the exception to the controller
+        // Check if the customer exists before attempting to delete
+        boolean deleted = customerDao.deleteCustomer(customerId);
+        if (!deleted) {
+            throw new NotFoundException("Customer not found with ID: " + customerId);
         }
+        return true;
     }
+
+
+
 
     @Override
     public List<CustomerDTO> getAllCustomers() {
