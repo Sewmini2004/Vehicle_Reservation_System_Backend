@@ -18,7 +18,7 @@ import java.util.List;
 
 public class CustomerServlet extends HttpServlet {
 
-    private CustomerService customerService;
+    public CustomerService customerService;
 
     @Override
     public void init() throws ServletException {
