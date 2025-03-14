@@ -16,14 +16,14 @@ import java.util.List;
 @WebServlet("/driver")
 public class DriverServlet extends HttpServlet {
 
-    private DriverService driverService;
+    public DriverService driverService;
 
     @Override
     public void init() throws ServletException {
         driverService = DriverServiceFactory.getDriverService();
     }
 
-    //  CREATE (POST) - Add a new driver
+    // CREATE (POST) - Add a new driver
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -39,7 +39,7 @@ public class DriverServlet extends HttpServlet {
 
             if (name == null || licenseNumber == null || phoneNumber == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Missing required fields.");
+                response.getWriter().write("{\"Error\" : \"Missing required fields.\"}");
                 return;
             }
 
@@ -47,43 +47,39 @@ public class DriverServlet extends HttpServlet {
 
             if (driverService.addDriver(driver)) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write("Driver added successfully.");
+                response.getWriter().write("{\"Message\" : \"Driver added successfully.\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.getWriter().write("Error adding driver.");
+                response.getWriter().write("{\"Error\" : \"Error adding driver.\"}");
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error adding driver: " + e.getMessage());
+            response.getWriter().write("{\"Error\" : \"Error adding driver: " + e.getMessage() + "\"}");
         }
     }
 
-
+    // READ (GET) - Get driver(s)
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             String driverIdParam = request.getParameter("driverId");
 
             if (driverIdParam != null && !driverIdParam.isEmpty()) {
-                // Fetch a single driver by ID
                 int driverId = Integer.parseInt(driverIdParam);
                 DriverDTO driver = driverService.getDriverById(driverId);
 
                 if (driver != null) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    // Returning the driver as JSON in the desired format
                     response.getWriter().write(JsonUtils.convertDtoToJson(driver));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     response.getWriter().write("{\"Error\" : \"Driver not found.\"}");
                 }
             } else {
-                // Fetch all drivers if no ID is provided
                 List<DriverDTO> drivers = driverService.getAllDrivers();
 
                 if (!drivers.isEmpty()) {
                     response.setStatus(HttpServletResponse.SC_OK);
-                    // Returning all drivers as JSON in the desired format
                     response.getWriter().write(JsonUtils.convertDtoToJson(drivers));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -117,13 +113,15 @@ public class DriverServlet extends HttpServlet {
             DriverDTO driver = new DriverDTO(driverId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
 
             if (driverService.updateDriver(driver)) {
-                response.getWriter().write("Driver updated successfully!");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"Message\" : \"Driver updated successfully!\"}");
             } else {
-                response.getWriter().write("Error updating driver.");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.getWriter().write("{\"Error\" : \"Error updating driver.\"}");
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error updating driver.");
+            response.getWriter().write("{\"Error\" : \"Error updating driver: " + e.getMessage() + "\"}");
         }
     }
 
@@ -134,13 +132,15 @@ public class DriverServlet extends HttpServlet {
             int driverId = Integer.parseInt(request.getParameter("driverId"));
 
             if (driverService.deleteDriver(driverId)) {
-                response.getWriter().write("Driver deleted successfully!");
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write("{\"Message\" : \"Driver deleted successfully!\"}");
             } else {
-                response.getWriter().write("Error deleting driver.");
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write("{\"Error\" : \"Driver not found.\"}");
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error deleting driver.");
+            response.getWriter().write("{\"Error\" : \"Error deleting driver: " + e.getMessage() + "\"}");
         }
     }
 }

@@ -38,17 +38,19 @@ public class BookingServlet extends HttpServlet {
         }
     }
 
+
     // CREATE (POST) - Add a new booking
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
             // Retrieve JSON data from the request
             String jsonData = JsonUtils.getJsonFromRequest(request);
-            System.out.println("jsonData:"+jsonData);
+            System.out.println("jsonData:" + jsonData);
+
             // Parse and extract vehicleId from the request data
             int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
             // Ensure that the vehicle exists in the database
-            System.out.println("Vehicle ID : "+ vehicleId);
+            System.out.println("Vehicle ID : " + vehicleId);
             DBConnection.getInstance().getConnection();
             if (!vehicleService.existsById(vehicleId)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -63,7 +65,20 @@ public class BookingServlet extends HttpServlet {
             String pickupLocation = JsonUtils.extractJsonValue(jsonData, "pickupLocation");
             String dropLocation = JsonUtils.extractJsonValue(jsonData, "dropLocation");
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
-            double totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
+
+            // Handle invalid totalBill input
+            double totalBill = 0.0;
+            try {
+                totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
+            }catch (NumberFormatException e) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure 400 Bad Request status
+                response.setContentType("application/json");
+                // Fix the message to avoid the duplication of "For input string:"
+                response.getWriter().write("{\"Error\": \"Invalid number format: " + e.getMessage() + "\"}");
+                return; // Ensure no further processing is done after catching the exception
+            }
+
+
 
             // Create a BookingDTO object from the extracted data
             BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill);
@@ -79,10 +94,6 @@ public class BookingServlet extends HttpServlet {
                 response.setContentType("application/json");
                 response.getWriter().write("{\"Error\": \"Error creating booking.\"}");
             }
-        } catch (NumberFormatException e) {
-
-            response.setContentType("application/json");
-            response.getWriter().write("{\"Error\": \"Invalid number format: " + e.getMessage() + "\"}");
         } catch (Exception e) {
             e.printStackTrace();
             // Catch any other exceptions and return appropriate message
@@ -91,6 +102,8 @@ public class BookingServlet extends HttpServlet {
             response.getWriter().write("{\"Error\": \"Invalid booking data: " + e.getMessage() + "\"}");
         }
     }
+
+
 
     // READ (GET) - Fetch a specific booking by ID or list all bookings
     @Override
@@ -166,6 +179,7 @@ public class BookingServlet extends HttpServlet {
 
             // Update the booking in the system
             if (bookingService.updateBooking(updatedBooking)) {
+                response.setStatus(HttpServletResponse.SC_OK);  // Ensure status is set to 200 OK
                 response.getWriter().write("Booking updated successfully.");
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -180,6 +194,7 @@ public class BookingServlet extends HttpServlet {
         }
     }
 
+
     // DELETE (DELETE) - Remove a booking (Allowed within 4 hours)
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -187,6 +202,7 @@ public class BookingServlet extends HttpServlet {
             int bookingId = Integer.parseInt(request.getParameter("bookingId"));
 
             if (bookingService.deleteBooking(bookingId)) {
+                response.setStatus(HttpServletResponse.SC_OK);  // Ensure the status is set to 200 OK
                 response.getWriter().write("Booking deleted successfully.");
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -197,4 +213,6 @@ public class BookingServlet extends HttpServlet {
             response.getWriter().write("Error deleting booking.");
         }
     }
+
+
 }
