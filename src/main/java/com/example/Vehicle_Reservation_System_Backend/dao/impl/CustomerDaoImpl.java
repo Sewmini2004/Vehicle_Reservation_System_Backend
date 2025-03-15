@@ -170,4 +170,41 @@ public class CustomerDaoImpl implements CustomerDao {
         }
         return customers;
     }
+
+    public List<CustomerEntity> searchCustomers(String searchTerm) {
+        List<CustomerEntity> customers = new ArrayList<>();
+
+        // Modified query to search across multiple fields
+        String query = "SELECT * FROM customer WHERE name LIKE ? OR email LIKE ? OR address LIKE ? OR phoneNumber LIKE ? OR nic LIKE ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            // Set the search term for all the fields
+            stmt.setString(1, "%" + searchTerm + "%");
+            stmt.setString(2, "%" + searchTerm + "%");
+            stmt.setString(3, "%" + searchTerm + "%");
+            stmt.setString(4, "%" + searchTerm + "%");
+            stmt.setString(5, "%" + searchTerm + "%");
+
+            ResultSet rs = stmt.executeQuery();
+
+            // Loop through the result set and create CustomerEntity objects
+            while (rs.next()) {
+                customers.add(new CustomerEntity(
+                        rs.getInt("customerId"),
+                        rs.getInt("userId"),
+                        rs.getString("name"),
+                        rs.getString("address"),
+                        rs.getString("nic"),
+                        rs.getString("phoneNumber"),
+                        rs.getString("registrationDate"),
+                        rs.getString("email")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return customers;
+    }
+
 }

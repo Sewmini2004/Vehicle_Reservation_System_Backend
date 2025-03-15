@@ -120,4 +120,11 @@ public class CustomerServiceImpl implements CustomerService {
         Matcher matcher = pattern.matcher(nic);
         return matcher.matches();
     }
+
+    @Override
+    public List<CustomerDTO> searchCustomers(String searchTerm) {
+        List<CustomerEntity> customerEntities = customerDao.searchCustomers(searchTerm);
+        return customerEntities.stream().map(CustomerConverter::convertToDTO).collect(Collectors.toList());
+    }
+
 }

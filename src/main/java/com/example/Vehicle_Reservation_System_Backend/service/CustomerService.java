@@ -13,5 +13,6 @@ public interface CustomerService {
     public boolean updateCustomer(CustomerDTO customer);
     public boolean deleteCustomer(int customerId);
     List<CustomerDTO> getAllCustomers();
+    public List<CustomerDTO> searchCustomers(String searchTerm);
 
 }
