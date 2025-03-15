@@ -42,13 +42,12 @@ public class CustomerServlet extends HttpServlet {
             String jsonData = JsonUtils.getJsonFromRequest(request);
             if (jsonData == null || jsonData.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Error: JSON request body is missing.");
+                response.setContentType("application/json");  // Set content type to JSON
+                response.getWriter().write("{\"Error\": \"JSON request body is missing.\"}");
                 return;
             }
 
             // Extract values from JSON
-            System.out.println("Customer ID");
-            System.out.println(JsonUtils.extractJsonValue(jsonData, "customerId"));
             int customerId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "customerId"));
             int userId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "userId"));
             String registrationDate = JsonUtils.extractJsonValue(jsonData, "registrationDate");
@@ -61,7 +60,8 @@ public class CustomerServlet extends HttpServlet {
             // Validate required fields
             if (name == null || name.isEmpty() || email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Error: Missing required fields (name, email, phoneNumber).");
+                response.setContentType("application/json");  // Set content type to JSON
+                response.getWriter().write("{\"Error\": \"Missing required fields (name, email, phoneNumber).\"}");
                 return;
             }
 
@@ -71,26 +71,30 @@ public class CustomerServlet extends HttpServlet {
             // Check if customer already exists
             if (customerService.existsById(customerId)) {
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
-                response.getWriter().write("Error: Customer ID already exists.");
+                response.setContentType("application/json");  // Set content type to JSON
+                response.getWriter().write("{\"Error\": \"Customer ID already exists.\"}");
                 return;
             }
 
             // Add customer
-            if (customerService.addCustomer(customerDTO)) {
+            boolean customerAdded = customerService.addCustomer(customerDTO);
+            if (customerAdded) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.getWriter().write("Customer added successfully.");
+                response.setContentType("application/json");  // Set content type to JSON
+                response.getWriter().write("{\"message\": \"Customer added successfully.\"}");
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setContentType("application/json");  // Set content type to JSON
+                response.getWriter().write("{\"Error\": \"Unable to save customer data.\"}");
             }
 
-        } catch (IllegalArgumentException | AlreadyException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.getWriter().write("{\"Error\" : \" "+e.getMessage()+" \"}");
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"Error\" : \" An error occurred while processing your request. \"}");
+            response.setContentType("application/json");  // Set content type to JSON
+            response.getWriter().write("{\"Error\": \"An error occurred while processing your request.\"}");
         }
     }
-
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -147,7 +151,8 @@ public class CustomerServlet extends HttpServlet {
             String jsonData = JsonUtils.getJsonFromRequest(request);
             if (jsonData == null || jsonData.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Error: JSON request body is missing.");
+                response.setContentType("application/json"); // Set the response content type to JSON
+                response.getWriter().write("{\"Error\": \"JSON request body is missing.\"}");
                 return;
             }
 
@@ -163,20 +168,28 @@ public class CustomerServlet extends HttpServlet {
             CustomerDTO customerDTO = new CustomerDTO(customerId, userId, name, address, nic, phone, registrationDate, email);
 
             if (customerService.updateCustomer(customerDTO)) {
-                response.getWriter().write("Customer updated successfully!");
+                response.setStatus(HttpServletResponse.SC_OK); // Success
+                response.setContentType("application/json"); // Set the response content type to JSON
+                response.getWriter().write("{\"message\": \"Customer updated successfully!\"}");
             } else {
-                response.getWriter().write("Error updating customer.");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Internal server error
+                response.setContentType("application/json"); // Set the response content type to JSON
+                response.getWriter().write("{\"Error\": \"Error updating customer.\"}");
             }
-        } catch (NotFoundException e){
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            response.getWriter().write(e.getMessage());
-        }
-        catch (Exception  e) {
+        } catch (NotFoundException e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Not found error
+            response.setContentType("application/json"); // Set the response content type to JSON
+            response.getWriter().write("{\"Error\": \"" + e.getMessage() + "\"}");
+        } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error updating customer.");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Internal server error
+            response.setContentType("application/json"); // Set the response content type to JSON
+            response.getWriter().write("{\"Error\": \"An error occurred while updating customer.\"}");
         }
     }
+
+
+
 
     // DELETE (DELETE) - Remove a customer
     @Override
@@ -185,20 +198,29 @@ public class CustomerServlet extends HttpServlet {
             String customerIdStr = request.getParameter("customerId");
             if (customerIdStr == null || customerIdStr.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Error: Missing customerId parameter.");
+                response.setContentType("application/json"); // Set response type to JSON
+                response.getWriter().write("{\"Error\": \"Missing customerId parameter.\"}");
                 return;
             }
 
             int customerId = Integer.parseInt(customerIdStr);
-            if (customerService.deleteCustomer(customerId)) {
-                response.getWriter().write("Customer deleted successfully!");
+            boolean isDeleted = customerService.deleteCustomer(customerId);
+
+            if (isDeleted) {
+                response.setStatus(HttpServletResponse.SC_OK); // HTTP status 200 OK
+                response.setContentType("application/json"); // Set response type to JSON
+                response.getWriter().write("{\"message\": \"Customer deleted successfully!\"}");
             } else {
-                response.getWriter().write("Error deleting customer.");
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // HTTP status 500 Internal Server Error
+                response.setContentType("application/json"); // Set response type to JSON
+                response.getWriter().write("{\"Error\": \"Error deleting customer.\"}");
             }
         } catch (Exception e) {
             e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error deleting customer.");
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // HTTP status 500 Internal Server Error
+            response.setContentType("application/json"); // Set response type to JSON
+            response.getWriter().write("{\"Error\": \"An error occurred while deleting customer.\"}");
         }
     }
+
 }

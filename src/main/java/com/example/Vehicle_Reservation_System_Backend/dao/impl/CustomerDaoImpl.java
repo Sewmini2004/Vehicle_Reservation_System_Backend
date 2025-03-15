@@ -122,23 +122,24 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public boolean deleteCustomer(int id) {
+    public boolean deleteCustomer(int customerId) {
+        // First, check if the customer exists
         String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
-            stmt.setInt(1, id);
+            stmt.setInt(1, customerId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next() && rs.getInt(1) == 0) {
-                throw new NotFoundException("Customer with ID " + id + " not found.");
+                throw new NotFoundException("Customer with ID " + customerId + " not found.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
 
-        // Proceed to delete the customer
+        // Now, proceed to delete the customer
         String query = "DELETE FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, id);
+            stmt.setInt(1, customerId);
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
