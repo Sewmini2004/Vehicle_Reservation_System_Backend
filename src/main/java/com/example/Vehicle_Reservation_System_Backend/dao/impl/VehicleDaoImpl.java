@@ -140,15 +140,29 @@ public class VehicleDaoImpl implements VehicleDao {
     @Override
     public List<VehicleEntity> searchVehicles(String searchTerm) {
         List<VehicleEntity> vehicles = new ArrayList<>();
-        String query = "SELECT * FROM vehicle WHERE carType LIKE ? OR model LIKE ? OR availabilityStatus LIKE ? OR registrationNumber LIKE ?";
+
+        // If no search term is provided, return an empty list
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            return vehicles;
+        }
+
+        // SQL query to search vehicles based on multiple fields
+        String query = "SELECT * FROM vehicle WHERE " +
+                "carType LIKE ? OR model LIKE ? OR availabilityStatus LIKE ? " +
+                "OR registrationNumber LIKE ? OR fuelType LIKE ? " +
+                "OR carModel LIKE ? OR seatingCapacity LIKE ?";
 
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, "%" + searchTerm + "%");
             stmt.setString(2, "%" + searchTerm + "%");
             stmt.setString(3, "%" + searchTerm + "%");
             stmt.setString(4, "%" + searchTerm + "%");
+            stmt.setString(5, "%" + searchTerm + "%");
+            stmt.setString(6, "%" + searchTerm + "%");
+            stmt.setString(7, "%" + searchTerm + "%");
 
             ResultSet rs = stmt.executeQuery();
+
             while (rs.next()) {
                 vehicles.add(new VehicleEntity(
                         rs.getInt("vehicleId"),
@@ -161,11 +175,17 @@ public class VehicleDaoImpl implements VehicleDao {
                         rs.getInt("seatingCapacity")
                 ));
             }
+
+            if (vehicles.isEmpty()) {
+                System.out.println("No vehicles found for search term: " + searchTerm);
+            }
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         return vehicles;
     }
+
 
 }

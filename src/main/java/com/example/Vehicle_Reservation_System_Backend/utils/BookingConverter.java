@@ -16,7 +16,13 @@ public class BookingConverter {
                 entity.getDropLocation(),
                 entity.getBookingDate(),
                 entity.getCarType(),
-                entity.getTotalBill()
+                entity.getTotalBill(),
+                entity.getCancelStatus(),
+                entity.getDistance(),
+                entity.getCustomerName(),
+                entity.getDriverName(),
+                entity.getVehicleModel(),
+                entity.getVehicleRegistrationNumber()
         );
     }
 

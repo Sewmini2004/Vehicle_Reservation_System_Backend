@@ -70,7 +70,7 @@ public class BookingServlet extends HttpServlet {
             double totalBill = 0.0;
             try {
                 totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
-            }catch (NumberFormatException e) {
+            } catch (NumberFormatException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure 400 Bad Request status
                 response.setContentType("application/json");
                 // Fix the message to avoid the duplication of "For input string:"
@@ -79,9 +79,8 @@ public class BookingServlet extends HttpServlet {
             }
 
 
-
             // Create a BookingDTO object from the extracted data
-            BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill);
+            BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill, "", 0.0, "", "", "", "");
 
             // Call the service method to add the booking
             boolean isBookingCreated = bookingService.addBooking(bookingDTO);
@@ -102,7 +101,6 @@ public class BookingServlet extends HttpServlet {
             response.getWriter().write("{\"Error\": \"Invalid booking data: " + e.getMessage() + "\"}");
         }
     }
-
 
 
     // READ (GET) - Fetch a specific booking by ID or list all bookings
@@ -173,9 +171,9 @@ public class BookingServlet extends HttpServlet {
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
             double totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
 
-            Date originalBookingDate  = DateFormatUtils.toDate(JsonUtils.extractJsonValue(jsonData, "bookingDate"));
+            Date originalBookingDate = DateFormatUtils.toDate(JsonUtils.extractJsonValue(jsonData, "bookingDate"));
 
-            BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill);
+            BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill, "", 0.0);
 
             // Update the booking in the system
             if (bookingService.updateBooking(updatedBooking)) {

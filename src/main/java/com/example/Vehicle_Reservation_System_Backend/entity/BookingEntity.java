@@ -2,22 +2,101 @@ package com.example.Vehicle_Reservation_System_Backend.entity;
 
 import java.util.Date;
 
-public class BookingEntity {
+public class  BookingEntity {
     private int bookingId;
     private int customerId;
+    private String customerName;
     private int vehicleId;
+    private String vehicleRegistrationNumber;
+    private String vehicleModel;
     private int driverId;
+    private String driverName;
     private String pickupLocation;
     private String dropLocation;
     private Date bookingDate;
     private String carType;
     private double totalBill;
 
+    private String cancelStatus;
+
+    private double distance;
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getVehicleRegistrationNumber() {
+        return vehicleRegistrationNumber;
+    }
+
+    public void setVehicleRegistrationNumber(String vehicleRegistrationNumber) {
+        this.vehicleRegistrationNumber = vehicleRegistrationNumber;
+    }
+
+    public String getVehicleModel() {
+        return vehicleModel;
+    }
+
+    public void setVehicleModel(String vehicleModel) {
+        this.vehicleModel = vehicleModel;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
+
+    public String getCancelStatus() {
+        return cancelStatus;
+    }
+
+    public void setCancelStatus(String cancelStatus) {
+        this.cancelStatus = cancelStatus;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
     // Default Constructor
     public BookingEntity() {}
 
     // Parameterized Constructor
-    public BookingEntity(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation, String dropLocation, Date bookingDate, String carType, double totalBill) {
+    public BookingEntity(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation,
+                         String dropLocation, Date bookingDate, String carType, double totalBill,
+                         String customerName, String driverName, String vehicleModel, String vehicleRegNumber
+
+    ) {
+        this.bookingId = bookingId;
+        this.customerId = customerId;
+        this.vehicleId = vehicleId;
+        this.driverId = driverId;
+        this.pickupLocation = pickupLocation;
+        this.dropLocation = dropLocation;
+        this.bookingDate = bookingDate;
+        this.carType = carType;
+        this.totalBill = totalBill;
+        this.customerName = customerName;
+        this.driverName = driverName;
+        this.vehicleModel = vehicleModel;
+        this.vehicleRegistrationNumber = vehicleRegNumber;
+    }
+
+    public BookingEntity(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation,
+                         String dropLocation, Date bookingDate, String carType, double totalBill
+
+    ) {
         this.bookingId = bookingId;
         this.customerId = customerId;
         this.vehicleId = vehicleId;
@@ -40,6 +119,8 @@ public class BookingEntity {
         this.bookingDate = dto.getBookingDate();
         this.carType = dto.getCarType();
         this.totalBill = dto.getTotalBill();
+        this.cancelStatus=dto.getCancelStatus();
+        this.distance=dto.getDistance();
     }
 
     // Getters and Setters
@@ -81,7 +162,9 @@ public class BookingEntity {
                 this.dropLocation,
                 this.bookingDate,
                 this.carType,
-                this.totalBill
+                this.totalBill,
+                this.cancelStatus,
+                this.distance
         );
     }
 }

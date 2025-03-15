@@ -67,31 +67,32 @@ public class VehicleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String vehicleIdStr = request.getParameter("vehicleId");
-            if (vehicleIdStr != null && !vehicleIdStr.isEmpty()) {
-                int vehicleId = Integer.parseInt(vehicleIdStr);
-                VehicleDTO vehicle = vehicleService.getVehicleById(vehicleId);
+            String searchTerm = request.getParameter("search");
 
-                // Log the vehicle data before sending the response
-                System.out.println("Fetched Vehicle Data: " + vehicle);
-
-                if (vehicle != null) {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicle));
-                } else {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.getWriter().write("{\"Error\": \"Vehicle not found.\"}");
-                }
+            // If search term is provided, filter vehicles by car type, model, or other fields
+            List<VehicleDTO> vehicles;
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                vehicles = vehicleService.searchVehicles(searchTerm);
             } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("{\"Error\": \"Missing vehicleId parameter.\"}");
+                // If no search term is provided, fetch all vehicles
+                vehicles = vehicleService.getAllVehicles();
             }
+
+            if (!vehicles.isEmpty()) {
+                response.setStatus(HttpServletResponse.SC_OK);
+                response.getWriter().write(JsonUtils.convertDtoToJson(vehicles));
+            } else {
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                response.getWriter().write("{\"Message\" : \"No vehicles found.\"}");
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"Error\": \"An error occurred while retrieving vehicle details.\"}");
+            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving vehicle details.\"}");
         }
     }
+
 
 
     // UPDATE (PUT) - Modify vehicle details

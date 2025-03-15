@@ -73,7 +73,7 @@ class BookingServletTest {
     @Test
     void testGetBooking_ValidId() throws Exception {
         int bookingId = 1;
-        BookingDTO booking = new BookingDTO(bookingId, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0);
+        BookingDTO booking = new BookingDTO(bookingId, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0,"",0.0);
         when(requestMock.getParameter("bookingId")).thenReturn(String.valueOf(bookingId));
         when(bookingServiceMock.getBookingById(bookingId)).thenReturn(booking);
 
@@ -100,7 +100,7 @@ class BookingServletTest {
     void testUpdateBooking_ValidUpdate() throws Exception {
         String json = "{\"bookingId\":1,\"customerId\":\"1\",\"vehicleId\":\"1\",\"driverId\":\"1\",\"pickupLocation\":\"A\",\"dropLocation\":\"B\",\"carType\":\"Sedan\",\"totalBill\":\"150.0\",\"bookingDate\":\"2025-03-11\"}";
         when(requestMock.getReader()).thenReturn(new BufferedReader(new StringReader(json)));
-        when(bookingServiceMock.getBookingById(anyInt())).thenReturn(new BookingDTO(1, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0));
+        when(bookingServiceMock.getBookingById(anyInt())).thenReturn(new BookingDTO(1, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0, "", 0.0));
         when(bookingServiceMock.updateBooking(any(BookingDTO.class))).thenReturn(true);
 
         bookingServlet.doPut(requestMock, responseMock);

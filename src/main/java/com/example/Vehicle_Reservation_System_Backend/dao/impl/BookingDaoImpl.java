@@ -53,7 +53,11 @@ public class BookingDaoImpl implements BookingDao {
 
     @Override
     public BookingEntity getBookingById(int bookingId) {
-        String query = "SELECT * FROM booking WHERE bookingId = ?";
+//        String query = "SELECT * FROM booking WHERE bookingId = ?";
+        String query = "SELECT bo.*, ca.name as customerName, ve.model as vehicleModel, ve.registrationNumber " +
+                "as vehicleRegistrationNumber, dr.name as driverName FROM booking bo  left join customer ca ON bo.customerId = ca.customerId " +
+                "left join vehicle ve ON bo.vehicleId = ve.vehicleId left join driver dr ON bo.driverId = dr.driverId " +
+                "WHERE bookingId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, bookingId);
             ResultSet rs = stmt.executeQuery();
@@ -67,7 +71,11 @@ public class BookingDaoImpl implements BookingDao {
                         rs.getString("dropLocation"),
                         rs.getDate("bookingDate"),
                         rs.getString("carType"),
-                        rs.getDouble("totalBill")
+                        rs.getDouble("totalBill"),
+                        rs.getString("customerName"),
+                        rs.getString("driverName"),
+                        rs.getString("vehicleModel"),
+                        rs.getString("vehicleRegistrationNumber")
                 );
             }
         } catch (SQLException e) {
@@ -79,7 +87,9 @@ public class BookingDaoImpl implements BookingDao {
     @Override
     public List<BookingEntity> getAllBookings() {
         List<BookingEntity> bookings = new ArrayList<>();
-        String query = "SELECT * FROM booking";
+        String query = "SELECT bo.*, ca.name as customerName, ve.model as vehicleModel, ve.registrationNumber " +
+                "as vehicleRegistrationNumber, dr.name as driverName FROM booking bo  left join customer ca ON bo.customerId = ca.customerId " +
+                "left join vehicle ve ON bo.vehicleId = ve.vehicleId left join driver dr ON bo.driverId = dr.driverId";
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -92,8 +102,12 @@ public class BookingDaoImpl implements BookingDao {
                         rs.getString("dropLocation"),
                         rs.getDate("bookingDate"),
                         rs.getString("carType"),
-                        rs.getDouble("totalBill")
-                ));
+                        rs.getDouble("totalBill"),
+                        rs.getString("customerName"),
+                        rs.getString("driverName"),
+                        rs.getString("vehicleModel"),
+                        rs.getString("vehicleRegistrationNumber")
+                        ));
             }
         } catch (SQLException e) {
             e.printStackTrace();

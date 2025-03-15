@@ -7,12 +7,53 @@ public class BookingDTO {
     private int customerId;
     private int vehicleId;
     private int driverId;
+
     private String pickupLocation;
     private String dropLocation;
     private Date bookingDate;
     private String carType;
     private double totalBill;
+    private String cancelStatus;
+
+    private double distance;
     private BillingDTO billingDetails;
+
+    private String customerName;
+    private String driverName;
+    private String vehicleModel;
+    private String vehicleRegistrationNumber;
+
+    public String getCustomerName() {
+        return customerName;
+    }
+
+    public void setCustomerName(String customerName) {
+        this.customerName = customerName;
+    }
+
+    public String getVehicleRegistrationNumber() {
+        return vehicleRegistrationNumber;
+    }
+
+    public void setVehicleRegistrationNumber(String vehicleRegistrationNumber) {
+        this.vehicleRegistrationNumber = vehicleRegistrationNumber;
+    }
+
+    public String getVehicleModel() {
+        return vehicleModel;
+    }
+
+    public void setVehicleModel(String vehicleModel) {
+        this.vehicleModel = vehicleModel;
+    }
+
+    public String getDriverName() {
+        return driverName;
+    }
+
+    public void setDriverName(String driverName) {
+        this.driverName = driverName;
+    }
 
     public BookingDTO() {}
 
@@ -80,6 +121,22 @@ public class BookingDTO {
         this.carType = carType;
     }
 
+    public String getCancelStatus() {
+        return cancelStatus;
+    }
+
+    public void setCancelStatus(String cancelStatus) {
+        this.cancelStatus = cancelStatus;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
     public double getTotalBill() {
         return totalBill;
     }
@@ -88,7 +145,11 @@ public class BookingDTO {
         this.totalBill = totalBill;
     }
 
-    public BookingDTO(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation, String dropLocation, Date bookingDate, String carType, double totalBill) {
+    public BookingDTO(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation,
+                      String dropLocation, Date bookingDate, String carType, double totalBill,
+                      String cancelStatus, double distance,
+                      String custoemrName, String driverName, String vehicleModel, String vehicleRegistrationNumber
+    ) {
         this.bookingId = bookingId;
         this.customerId = customerId;
         this.vehicleId = vehicleId;
@@ -98,6 +159,29 @@ public class BookingDTO {
         this.bookingDate = bookingDate;
         this.carType = carType;
         this.totalBill = totalBill;
+        this.cancelStatus = cancelStatus;
+        this.distance = distance;
+        this.customerName = custoemrName;
+        this.driverName = driverName;
+        this.vehicleModel = vehicleModel;
+        this.vehicleRegistrationNumber = vehicleRegistrationNumber;
+    }
+
+    public BookingDTO(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation,
+                      String dropLocation, Date bookingDate, String carType, double totalBill,
+                      String cancelStatus, double distance
+    ) {
+        this.bookingId = bookingId;
+        this.customerId = customerId;
+        this.vehicleId = vehicleId;
+        this.driverId = driverId;
+        this.pickupLocation = pickupLocation;
+        this.dropLocation = dropLocation;
+        this.bookingDate = bookingDate;
+        this.carType = carType;
+        this.totalBill = totalBill;
+        this.cancelStatus = cancelStatus;
+        this.distance = distance;
     }
 
     public void setBillingDetails(BillingDTO billingDetails) {
