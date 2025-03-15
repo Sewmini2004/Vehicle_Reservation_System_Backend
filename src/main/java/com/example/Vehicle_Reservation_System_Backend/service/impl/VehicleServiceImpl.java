@@ -59,4 +59,11 @@ public class VehicleServiceImpl implements VehicleService {
         return vehicleEntity != null;
     }
 
+    @Override
+    public List<VehicleDTO> searchVehicles(String searchTerm) {
+        List<VehicleEntity> vehicleEntities = vehicleDao.searchVehicles(searchTerm);
+        return vehicleEntities.stream().map(VehicleConverter::convertToDTO).collect(Collectors.toList());
+    }
+
+
 }

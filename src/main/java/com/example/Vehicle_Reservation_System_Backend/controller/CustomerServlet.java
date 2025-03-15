@@ -60,7 +60,7 @@ public class CustomerServlet extends HttpServlet {
             // Validate required fields
             if (name == null || name.isEmpty() || email == null || email.isEmpty() || phone == null || phone.isEmpty()) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.setContentType("application/json");  // Set content type to JSON
+                response.setContentType("application/json");
                 response.getWriter().write("{\"Error\": \"Missing required fields (name, email, phoneNumber).\"}");
                 return;
             }
@@ -71,7 +71,7 @@ public class CustomerServlet extends HttpServlet {
             // Check if customer already exists
             if (customerService.existsById(customerId)) {
                 response.setStatus(HttpServletResponse.SC_CONFLICT);
-                response.setContentType("application/json");  // Set content type to JSON
+                response.setContentType("application/json");
                 response.getWriter().write("{\"Error\": \"Customer ID already exists.\"}");
                 return;
             }
@@ -79,22 +79,43 @@ public class CustomerServlet extends HttpServlet {
             // Add customer
             boolean customerAdded = customerService.addCustomer(customerDTO);
             if (customerAdded) {
+                // Instead of sending an email, we print the email content to the console
+                printConfirmationEmailContent(customerDTO);
+
                 response.setStatus(HttpServletResponse.SC_CREATED);
-                response.setContentType("application/json");  // Set content type to JSON
+                response.setContentType("application/json");
                 response.getWriter().write("{\"message\": \"Customer added successfully.\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-                response.setContentType("application/json");  // Set content type to JSON
+                response.setContentType("application/json");
                 response.getWriter().write("{\"Error\": \"Unable to save customer data.\"}");
             }
 
         } catch (Exception e) {
             e.printStackTrace();
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.setContentType("application/json");  // Set content type to JSON
+            response.setContentType("application/json");
             response.getWriter().write("{\"Error\": \"An error occurred while processing your request.\"}");
         }
     }
+
+    // Method to print the email content to the console
+    private void printConfirmationEmailContent(CustomerDTO customerDTO) {
+        // Create the email content with actual customer details
+        String emailContent = "Dear " + customerDTO.getName() + ",\n\n" +
+                "Thank you for registering with our service!\n\n" +
+                "We are pleased to confirm your registration. Your details are as follows:\n" +
+                "Name: " + customerDTO.getName() + "\n" +  // Customer name
+                "Email: " + customerDTO.getEmail() + "\n" + // Customer email
+                "Phone: " + customerDTO.getPhoneNumber() + "\n" + // Customer phone
+                "Registration Date: " + customerDTO.getRegistrationDate() + "\n\n" + // Customer registration date
+                "Best Regards,\nYour Service Team";
+
+        // Print the email content to the console
+        System.out.println("Confirmation Email Content:");
+        System.out.println(emailContent);  // This is where the email content is printed
+    }
+
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

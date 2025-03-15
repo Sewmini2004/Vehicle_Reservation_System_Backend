@@ -136,4 +136,36 @@ public class VehicleDaoImpl implements VehicleDao {
             return false;
         }
     }
+
+    @Override
+    public List<VehicleEntity> searchVehicles(String searchTerm) {
+        List<VehicleEntity> vehicles = new ArrayList<>();
+        String query = "SELECT * FROM vehicle WHERE carType LIKE ? OR model LIKE ? OR availabilityStatus LIKE ? OR registrationNumber LIKE ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, "%" + searchTerm + "%");
+            stmt.setString(2, "%" + searchTerm + "%");
+            stmt.setString(3, "%" + searchTerm + "%");
+            stmt.setString(4, "%" + searchTerm + "%");
+
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                vehicles.add(new VehicleEntity(
+                        rs.getInt("vehicleId"),
+                        rs.getString("carType"),
+                        rs.getString("model"),
+                        rs.getString("availabilityStatus"),
+                        rs.getString("registrationNumber"),
+                        rs.getString("fuelType"),
+                        rs.getString("carModel"),
+                        rs.getInt("seatingCapacity")
+                ));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return vehicles;
+    }
+
 }

@@ -1,8 +1,8 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.VehicleDTO;
-import com.example.Vehicle_Reservation_System_Backend.service.VehicleService;
 import com.example.Vehicle_Reservation_System_Backend.factory.VehicleServiceFactory;
+import com.example.Vehicle_Reservation_System_Backend.service.VehicleService;
 import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -44,7 +44,7 @@ public class VehicleServlet extends HttpServlet {
             // Check for missing required fields
             if (carType == null || model == null || registrationNumber == null) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.getWriter().write("Missing required fields.");
+                response.getWriter().write("{\"Error\": \"Missing required fields.\"}");
                 return;
             }
 
@@ -52,14 +52,14 @@ public class VehicleServlet extends HttpServlet {
 
             if (vehicleService.addVehicle(vehicle)) {
                 response.setStatus(HttpServletResponse.SC_CREATED); // Success - 201
-                response.getWriter().write("Vehicle added successfully.");
+                response.getWriter().write("{\"message\": \"Vehicle added successfully.\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
-                response.getWriter().write("Error adding vehicle.");
+                response.getWriter().write("{\"Error\": \"Error adding vehicle.\"}");
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("Error adding vehicle: " + e.getMessage());
+            response.getWriter().write("{\"Error\": \"Error adding vehicle: " + e.getMessage() + "\"}");
         }
     }
 
@@ -67,40 +67,32 @@ public class VehicleServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
-            String vehicleIdParam = request.getParameter("vehicleId");
-
-            if (vehicleIdParam != null && !vehicleIdParam.isEmpty()) {
-                // Fetch a single vehicle by ID
-                int vehicleId = Integer.parseInt(vehicleIdParam);
+            String vehicleIdStr = request.getParameter("vehicleId");
+            if (vehicleIdStr != null && !vehicleIdStr.isEmpty()) {
+                int vehicleId = Integer.parseInt(vehicleIdStr);
                 VehicleDTO vehicle = vehicleService.getVehicleById(vehicleId);
 
+                // Log the vehicle data before sending the response
+                System.out.println("Fetched Vehicle Data: " + vehicle);
+
                 if (vehicle != null) {
-                    response.setStatus(HttpServletResponse.SC_OK); // Success - 200
-                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicle)); // Return vehicle as JSON
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicle));
                 } else {
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Failure - 404
-                    response.getWriter().write("{\"Error\" : \"Vehicle not found.\"}");
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.getWriter().write("{\"Error\": \"Vehicle not found.\"}");
                 }
             } else {
-                // Fetch all vehicles if no ID is provided
-                List<VehicleDTO> vehicles = vehicleService.getAllVehicles();
-
-                if (!vehicles.isEmpty()) {
-                    response.setStatus(HttpServletResponse.SC_OK); // Success - 200
-                    response.getWriter().write(JsonUtils.convertDtoToJson(vehicles)); // Return all vehicles as JSON
-                } else {
-                    response.setStatus(HttpServletResponse.SC_NO_CONTENT); // No Content - 204
-                    response.getWriter().write("{\"Message\" : \"No vehicles available.\"}");
-                }
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write("{\"Error\": \"Missing vehicleId parameter.\"}");
             }
-        } catch (NumberFormatException e) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Failure - 400
-            response.getWriter().write("{\"Error\" : \"Invalid vehicle ID format.\"}");
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
-            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving vehicle details.\"}");
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write("{\"Error\": \"An error occurred while retrieving vehicle details.\"}");
         }
     }
+
 
     // UPDATE (PUT) - Modify vehicle details
     @Override
@@ -120,33 +112,40 @@ public class VehicleServlet extends HttpServlet {
 
             if (vehicleService.updateVehicle(vehicle)) {
                 response.setStatus(HttpServletResponse.SC_OK); // Success - 200
-                response.getWriter().write("Vehicle updated successfully!");
+                response.getWriter().write("{\"message\": \"Vehicle updated successfully!\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
-                response.getWriter().write("Error updating vehicle.");
+                response.getWriter().write("{\"Error\": \"Error updating vehicle.\"}");
             }
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
-            response.getWriter().write("Error updating vehicle.");
+            response.getWriter().write("{\"Error\": \"Error updating vehicle.\"}");
         }
     }
 
     // DELETE (DELETE) - Remove a vehicle
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        try {
-            int vehicleId = Integer.parseInt(request.getParameter("vehicleId"));
+        String vehicleIdStr = request.getParameter("vehicleId");
+        if (vehicleIdStr == null || vehicleIdStr.isEmpty()) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"Error\": \"Missing vehicleId parameter.\"}");
+            return;
+        }
 
-            if (vehicleService.deleteVehicle(vehicleId)) {
-                response.setStatus(HttpServletResponse.SC_OK); // Success - 200
-                response.getWriter().write("Vehicle deleted successfully!");
-            } else {
-                response.setStatus(HttpServletResponse.SC_NOT_FOUND); // Failure - 404
-                response.getWriter().write("Vehicle not found.");
-            }
-        } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // Failure - 500
-            response.getWriter().write("Error deleting vehicle.");
+        int vehicleId = Integer.parseInt(vehicleIdStr);
+        boolean isDeleted = vehicleService.deleteVehicle(vehicleId);
+
+        if (isDeleted) {
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"message\": \"Vehicle deleted successfully!\"}");
+        } else {
+            // If vehicle couldn't be deleted due to constraints, inform the user.
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"Error\": \"Cannot delete vehicle. It is linked to a booking.\"}");
         }
     }
 }
