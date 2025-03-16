@@ -11,7 +11,10 @@
     import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
     import java.sql.Connection;
+    import java.sql.PreparedStatement;
+    import java.sql.ResultSet;
     import java.sql.SQLException;
+    import java.util.ArrayList;
     import java.util.List;
     import java.util.stream.Collectors;
 
@@ -68,7 +71,7 @@
                 double discountAmount = totalAmount * 0.05;
                 double finalAmount = totalAmount + taxAmount - discountAmount;
 
-                boolean billSaved = billingDao.saveBill(entity.getBookingId(), totalAmount, taxAmount, discountAmount, finalAmount, "Credit Card", "Pending");
+                boolean billSaved = billingDao.saveBill(entity.getBookingId(), totalAmount, taxAmount, discountAmount, finalAmount, bookingDTO.getBillingDetails().getPaymentMethod(), bookingDTO.getBillingDetails().getPaymentStatus());
 
                 if (!billSaved) {
                     throw new SQLException("Failed to save bill.");
@@ -103,21 +106,12 @@
 
         @Override
         public BookingDTO getBookingById(int bookingId) throws SQLException {
-            BookingEntity entity = bookingDao.getBookingById(bookingId);
-            if (entity == null) {
-                throw new NotFoundException("Booking with ID " + bookingId + " not found.");
+            BookingEntity bookingEntity = bookingDao.getBookingById(bookingId);
+
+            if (bookingEntity != null) {
+                return BookingConverter.convertToDTO(bookingEntity);
             }
-
-            // Convert Entity to DTO using the BookingConverter
-            BookingDTO bookingDTO = BookingConverter.convertToDTO(entity);
-
-            // Fetch billing details and attach to booking
-            BillingDTO billingDTO = billingDao.getBillByBookingId(bookingId);
-            if (billingDTO != null) {
-                bookingDTO.setBillingDetails(billingDTO);
-            }
-
-            return bookingDTO;
+            return null;
         }
 
         @Override
@@ -245,5 +239,59 @@
                 }
             }
         }
+
+
+        public List<BookingDTO> searchBookings(String searchTerm) throws SQLException {
+            List<BookingDTO> result = new ArrayList<>();
+            Connection connection = DBConnection.getInstance().getConnection();
+
+            // SQL query to search across multiple columns including the bookingDate
+            String query = "SELECT bo.*, ca.name as customerName, ve.model as vehicleModel, ve.registrationNumber as vehicleRegistrationNumber, " +
+                    "dr.name as driverName FROM booking bo " +
+                    "LEFT JOIN customer ca ON bo.customerId = ca.customerId " +
+                    "LEFT JOIN vehicle ve ON bo.vehicleId = ve.vehicleId " +
+                    "LEFT JOIN driver dr ON bo.driverId = dr.driverId " +
+                    "WHERE ca.name LIKE ? OR ve.model LIKE ? OR bo.pickupLocation LIKE ? OR bo.dropLocation LIKE ? OR dr.name LIKE ? OR bo.bookingDate LIKE ?";
+
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                String likeSearchTerm = "%" + searchTerm + "%";
+                stmt.setString(1, likeSearchTerm);
+                stmt.setString(2, likeSearchTerm);
+                stmt.setString(3, likeSearchTerm);
+                stmt.setString(4, likeSearchTerm);
+                stmt.setString(5, likeSearchTerm);
+
+                if (searchTerm.matches("\\d{4}-\\d{2}-\\d{2}")) {
+                    stmt.setString(6, searchTerm);
+                } else {
+                    stmt.setString(6, "%");
+                }
+
+                ResultSet rs = stmt.executeQuery();
+
+                while (rs.next()) {
+                    result.add(new BookingDTO(
+                            rs.getInt("bookingId"),
+                            rs.getInt("customerId"),
+                            rs.getInt("vehicleId"),
+                            rs.getInt("driverID"),
+                            rs.getString("pickupLocation"),
+                            rs.getString("dropLocation"),
+                            rs.getDate("bookingDate"),
+                            rs.getString("carType"),
+                            rs.getDouble("totalBill"),
+                            rs.getString("cancelStatus"),
+                            rs.getDouble("distance"),
+                            rs.getString("customerName"),
+                            rs.getString("driverName"),
+                            rs.getString("vehicleModel"),
+                            rs.getString("vehicleRegistrationNumber")
+                    ));
+                }
+            }
+
+            return result;
+        }
+
 
     }

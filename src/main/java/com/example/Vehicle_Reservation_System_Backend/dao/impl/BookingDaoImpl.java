@@ -18,7 +18,7 @@ public class BookingDaoImpl implements BookingDao {
 
     @Override
     public int saveBooking(BookingEntity booking) {
-        String query = "INSERT INTO booking (customerId, vehicleId, driverID, pickupLocation, dropLocation, bookingDate, carType, totalBill) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+        String query = "INSERT INTO booking (customerId, vehicleId, driverID, pickupLocation, dropLocation, bookingDate, carType, totalBill,cancelStatus,distance) VALUES (?, ?, ?, ?, ?, ?, ?, ?,?,?)";
 
         try (PreparedStatement stmt = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
             stmt.setInt(1, booking.getCustomerId());
@@ -29,6 +29,8 @@ public class BookingDaoImpl implements BookingDao {
             stmt.setDate(6, new java.sql.Date(booking.getBookingDate().getTime()));
             stmt.setString(7, booking.getCarType());
             stmt.setDouble(8, booking.getTotalBill());
+            stmt.setString(9, booking.getCancelStatus());
+            stmt.setDouble(10, booking.getDistance());
 
             int affectedRows = stmt.executeUpdate();
 
@@ -72,6 +74,8 @@ public class BookingDaoImpl implements BookingDao {
                         rs.getDate("bookingDate"),
                         rs.getString("carType"),
                         rs.getDouble("totalBill"),
+                        rs.getDouble("distance"),
+                        rs.getString("cancelStatus"),
                         rs.getString("customerName"),
                         rs.getString("driverName"),
                         rs.getString("vehicleModel"),
@@ -88,8 +92,12 @@ public class BookingDaoImpl implements BookingDao {
     public List<BookingEntity> getAllBookings() {
         List<BookingEntity> bookings = new ArrayList<>();
         String query = "SELECT bo.*, ca.name as customerName, ve.model as vehicleModel, ve.registrationNumber " +
-                "as vehicleRegistrationNumber, dr.name as driverName FROM booking bo  left join customer ca ON bo.customerId = ca.customerId " +
-                "left join vehicle ve ON bo.vehicleId = ve.vehicleId left join driver dr ON bo.driverId = dr.driverId";
+                "as vehicleRegistrationNumber, dr.name as driverName, bo.distance " +
+                "FROM booking bo " +
+                "LEFT JOIN customer ca ON bo.customerId = ca.customerId " +
+                "LEFT JOIN vehicle ve ON bo.vehicleId = ve.vehicleId " +
+                "LEFT JOIN driver dr ON bo.driverId = dr.driverId";
+
         try (Statement stmt = connection.createStatement();
              ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
@@ -103,11 +111,13 @@ public class BookingDaoImpl implements BookingDao {
                         rs.getDate("bookingDate"),
                         rs.getString("carType"),
                         rs.getDouble("totalBill"),
+                        rs.getDouble("distance"),
+                        rs.getString("cancelStatus"),
                         rs.getString("customerName"),
                         rs.getString("driverName"),
                         rs.getString("vehicleModel"),
                         rs.getString("vehicleRegistrationNumber")
-                        ));
+                ));
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -117,14 +127,16 @@ public class BookingDaoImpl implements BookingDao {
 
     @Override
     public boolean updateBooking(BookingEntity booking) {
-        String query = "UPDATE booking SET pickupLocation = ?, dropLocation = ?, carType = ?, totalBill = ? , bookingDate = ? WHERE bookingId = ?";
+        String query = "UPDATE booking SET pickupLocation = ?, dropLocation = ?, carType = ?, totalBill = ? , cancelStatus =?, distance=?  bookingDate = ? WHERE bookingId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, booking.getPickupLocation());
             stmt.setString(2, booking.getDropLocation());
             stmt.setString(3, booking.getCarType());
             stmt.setDouble(4, booking.getTotalBill());
-            stmt.setDate(5, DateFormatUtils.convertUtilToSqlDate(booking.getBookingDate()));
-            stmt.setInt(6, booking.getBookingId());
+            stmt.setString(5, booking.getCancelStatus());
+            stmt.setDouble(6, booking.getDistance());
+            stmt.setDate(7, DateFormatUtils.convertUtilToSqlDate(booking.getBookingDate()));
+            stmt.setInt(8, booking.getBookingId());
 
             int rowsUpdated = stmt.executeUpdate();
             return rowsUpdated > 0;

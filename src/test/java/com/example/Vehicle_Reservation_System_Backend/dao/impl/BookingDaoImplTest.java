@@ -38,7 +38,7 @@ class BookingDaoImplTest {
     @Test
     void testSaveBooking_Success() throws SQLException {
         // Create a mock BookingEntity
-        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0);
+        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0,2,"");
 
         // Mock the PreparedStatement behavior for the insert query
         when(mockConnection.prepareStatement(anyString(), eq(Statement.RETURN_GENERATED_KEYS))).thenReturn(mockStmt);
@@ -59,7 +59,7 @@ class BookingDaoImplTest {
     @Test
     void testSaveBooking_Failure() throws SQLException {
         // Create a mock BookingEntity
-        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0);
+        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0,4,"");
 
         // Mock the PreparedStatement behavior to simulate no generated keys
         when(mockConnection.prepareStatement(anyString(), eq(Statement.RETURN_GENERATED_KEYS))).thenReturn(mockStmt);
@@ -119,7 +119,7 @@ class BookingDaoImplTest {
 
     @Test
     void testUpdateBooking_Success() throws SQLException {
-        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0);
+        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0,2,"");
 
         // Mock PreparedStatement for the update query
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStmt);

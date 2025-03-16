@@ -37,7 +37,9 @@ public class BookingConverter {
                 dto.getDropLocation(),
                 dto.getBookingDate(),
                 dto.getCarType(),
-                dto.getTotalBill()
+                dto.getTotalBill(),
+                dto.getDistance(),
+                dto.getCancelStatus()
         );
     }
 }

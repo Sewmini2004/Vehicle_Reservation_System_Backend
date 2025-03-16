@@ -74,7 +74,7 @@ public class  BookingEntity {
 
     // Parameterized Constructor
     public BookingEntity(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation,
-                         String dropLocation, Date bookingDate, String carType, double totalBill,
+                         String dropLocation, Date bookingDate, String carType, double totalBill,double distance,String cancelStatus,
                          String customerName, String driverName, String vehicleModel, String vehicleRegNumber
 
     ) {
@@ -87,6 +87,8 @@ public class  BookingEntity {
         this.bookingDate = bookingDate;
         this.carType = carType;
         this.totalBill = totalBill;
+        this.distance=distance;
+        this.cancelStatus=cancelStatus;
         this.customerName = customerName;
         this.driverName = driverName;
         this.vehicleModel = vehicleModel;
@@ -94,7 +96,7 @@ public class  BookingEntity {
     }
 
     public BookingEntity(int bookingId, int customerId, int vehicleId, int driverId, String pickupLocation,
-                         String dropLocation, Date bookingDate, String carType, double totalBill
+                         String dropLocation, Date bookingDate, String carType, double totalBill , double distance, String cancelStatus
 
     ) {
         this.bookingId = bookingId;
@@ -106,6 +108,9 @@ public class  BookingEntity {
         this.bookingDate = bookingDate;
         this.carType = carType;
         this.totalBill = totalBill;
+        this.distance=distance;
+        this.cancelStatus=cancelStatus;
+
     }
 
     // Constructor to convert from DTO

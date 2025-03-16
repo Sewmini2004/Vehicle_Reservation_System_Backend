@@ -1,5 +1,6 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
+import com.example.Vehicle_Reservation_System_Backend.dto.BillingDTO;
 import com.example.Vehicle_Reservation_System_Backend.dto.BookingDTO;
 import com.example.Vehicle_Reservation_System_Backend.exception.DateFormatException;
 import com.example.Vehicle_Reservation_System_Backend.factory.VehicleServiceFactory;
@@ -65,11 +66,15 @@ public class BookingServlet extends HttpServlet {
             String pickupLocation = JsonUtils.extractJsonValue(jsonData, "pickupLocation");
             String dropLocation = JsonUtils.extractJsonValue(jsonData, "dropLocation");
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
+            String paymentMethod = JsonUtils.extractJsonValue(jsonData, "paymentMethod");
+            String paymentStatus = JsonUtils.extractJsonValue(jsonData, "paymentStatus");
 
             // Handle invalid totalBill input
             double totalBill = 0.0;
+            double distance = 0.0;
             try {
                 totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
+                distance = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "distance"));
             } catch (NumberFormatException e) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure 400 Bad Request status
                 response.setContentType("application/json");
@@ -80,8 +85,11 @@ public class BookingServlet extends HttpServlet {
 
 
             // Create a BookingDTO object from the extracted data
-            BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill, "", 0.0, "", "", "", "");
-
+            BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill, "", distance, "", "", "", "");
+            BillingDTO billingDTO = new BillingDTO();
+            billingDTO.setPaymentMethod(paymentMethod);
+            billingDTO.setPaymentStatus(paymentStatus);
+            bookingDTO.setBillingDetails(billingDTO);
             // Call the service method to add the booking
             boolean isBookingCreated = bookingService.addBooking(bookingDTO);
             if (isBookingCreated) {
@@ -107,31 +115,42 @@ public class BookingServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
+            String searchTerm = request.getParameter("search");  // Get search term from the request
             String bookingIdParam = request.getParameter("bookingId");
 
-            if (bookingIdParam != null && !bookingIdParam.isEmpty()) {
-                // Fetch a single booking by ID
+            // If search term is present, filter the bookings based on it
+            if (searchTerm != null && !searchTerm.isEmpty()) {
+                // Fetch filtered bookings by search term
+                List<BookingDTO> bookings = bookingService.searchBookings(searchTerm);
+
+                if (!bookings.isEmpty()) {
+                    response.setContentType("application/json");
+                    response.setStatus(HttpServletResponse.SC_OK);
+                    response.getWriter().write(JsonUtils.convertDtoToJson(bookings)); // Send filtered bookings as response
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                    response.getWriter().write("{\"Message\" : \"No bookings found.\"}");
+                }
+            } else if (bookingIdParam != null && !bookingIdParam.isEmpty()) {
+                // Fetch a specific booking if bookingId is provided
                 int bookingId = Integer.parseInt(bookingIdParam);
                 BookingDTO booking = bookingService.getBookingById(bookingId);
 
                 if (booking != null) {
-                    // Set the response content type to JSON
                     response.setContentType("application/json");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    // Convert the booking DTO to JSON
                     response.getWriter().write(JsonUtils.convertDtoToJson(booking));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     response.getWriter().write("{\"Error\" : \"Booking not found.\"}");
                 }
             } else {
-                // Fetch all bookings if no ID is provided
+                // Fetch all bookings if no search or bookingId is provided
                 List<BookingDTO> bookings = bookingService.getAllBookings();
 
                 if (!bookings.isEmpty()) {
                     response.setContentType("application/json");
                     response.setStatus(HttpServletResponse.SC_OK);
-                    // Convert the list of bookings to JSON
                     response.getWriter().write(JsonUtils.convertDtoToJson(bookings));
                 } else {
                     response.setStatus(HttpServletResponse.SC_NO_CONTENT);
@@ -170,10 +189,11 @@ public class BookingServlet extends HttpServlet {
             String dropLocation = JsonUtils.extractJsonValue(jsonData, "dropLocation");
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
             double totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
+            double distance = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "distance"));
 
             Date originalBookingDate = DateFormatUtils.toDate(JsonUtils.extractJsonValue(jsonData, "bookingDate"));
 
-            BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill, "", 0.0);
+            BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill, "", distance);
 
             // Update the booking in the system
             if (bookingService.updateBooking(updatedBooking)) {

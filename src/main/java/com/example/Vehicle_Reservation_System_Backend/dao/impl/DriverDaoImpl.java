@@ -4,6 +4,7 @@ import com.example.Vehicle_Reservation_System_Backend.dao.DriverDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.DriverEntity;
 import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +12,7 @@ import java.util.List;
 
 public class DriverDaoImpl implements DriverDao {
 
-    private final Connection connection;
+    private  Connection connection;
 
     // Constructor to accept the shared Connection instance
     public DriverDaoImpl(Connection connection) {
@@ -20,6 +21,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public boolean saveDriver(DriverEntity driverEntity) {
+        connection = DBConnection.getInstance().getConnection();
         // Check if the license number or phone number already exists
         try {
             String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE licenseNumber = ? OR phoneNumber = ?";
@@ -55,6 +57,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public DriverEntity getById(int driverId) {
+        connection = DBConnection.getInstance().getConnection();
         String query = "SELECT * FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
@@ -81,6 +84,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public boolean updateDriver(DriverEntity driverEntity) {
+        connection = DBConnection.getInstance().getConnection();
         // Check if the driver exists before updating
         String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
@@ -115,6 +119,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public boolean deleteDriver(int driverId) {
+        connection = DBConnection.getInstance().getConnection();
         // Check if the driver exists before deleting
         String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
@@ -142,6 +147,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public List<DriverEntity> getAllDrivers() {
+        connection = DBConnection.getInstance().getConnection();
         List<DriverEntity> drivers = new ArrayList<>();
         String query = "SELECT * FROM driver";
         try (Statement stmt = connection.createStatement()) {

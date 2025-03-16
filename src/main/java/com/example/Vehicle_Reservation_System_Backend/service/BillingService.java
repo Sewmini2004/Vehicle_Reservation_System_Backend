@@ -7,4 +7,5 @@ import java.util.List;
 public interface BillingService {
     BillingDTO getBillByBookingId(int bookingId) throws SQLException;
     List<BillingDTO> getAllBills() throws SQLException;
+    public List<BillingDTO> searchPayments(String searchTerm);
 }
