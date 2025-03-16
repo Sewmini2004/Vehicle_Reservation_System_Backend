@@ -244,8 +244,9 @@ public class BookingServlet extends HttpServlet {
             response.getWriter().write("{\"Error\" : \"Invalid booking ID format.\"}");
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            response.getWriter().write("{\"Error\" : \"An error occurred while retrieving booking details.\"}");
+            response.getWriter().write("Error updating booking: " + e.getMessage());
         }
+
     }
 
     // UPDATE (PUT) - Modify booking details (Allowed within 2 hours)

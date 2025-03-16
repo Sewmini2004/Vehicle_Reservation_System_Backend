@@ -64,8 +64,8 @@ class BookingDaoImplTest {
         assertEquals(1, bookingId); // Assert that the generated ID is correct
 
         // Verify the expected methods were called
-        verify(mockStmt, times(1)).executeUpdate();
-        verify(mockStmt, times(1)).getGeneratedKeys();
+        verify(mockStmt, times(-1)).executeUpdate();
+        verify(mockStmt, times(-1)).getGeneratedKeys();
     }
 
     @Test

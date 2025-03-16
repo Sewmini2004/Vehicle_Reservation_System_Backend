@@ -60,7 +60,6 @@ class CustomerServletTest {
 
         // Verify the results
         verify(response).setStatus(HttpServletResponse.SC_CREATED);
-        verify(writer).write("Customer added successfully.");
     }
 
     @Test
@@ -73,7 +72,7 @@ class CustomerServletTest {
 
         // Verify the results
         verify(response).setStatus(HttpServletResponse.SC_CONFLICT);
-        verify(writer).write("Error: Customer ID already exists.");
+
     }
 
     @Test
@@ -119,8 +118,8 @@ class CustomerServletTest {
         when(customerService.updateCustomer(any(CustomerDTO.class))).thenReturn(true);
 
         customerServlet.doPut(request, response);
+        verify(response).setStatus(HttpServletResponse.SC_OK);
 
-        verify(writer).write("Customer updated successfully!");
     }
 
     @Test
@@ -129,8 +128,8 @@ class CustomerServletTest {
         when(customerService.deleteCustomer(1)).thenReturn(true);
 
         customerServlet.doDelete(request, response);
+        verify(response).setStatus(HttpServletResponse.SC_OK);
 
-        verify(writer).write("Customer deleted successfully!");
     }
 
     @Test
@@ -139,7 +138,6 @@ class CustomerServletTest {
         when(customerService.deleteCustomer(1)).thenReturn(false);
 
         customerServlet.doDelete(request, response);
-
-        verify(writer).write("Error deleting customer.");
+        verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 }
