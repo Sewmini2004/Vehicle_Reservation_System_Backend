@@ -78,7 +78,17 @@ class CustomerServletTest {
 
     @Test
     void testDoGet_CustomerFound() throws Exception {
-        CustomerDTO customer = new CustomerDTO(1, 1, "John Doe", "123 Main St", "1234567890", "1234567890", "2025-03-11", "john.doe@example.com");
+        // Create CustomerDTO using Builder pattern
+        CustomerDTO customer = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(1)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("1234567890")
+                .phoneNumber("1234567890")
+                .registrationDate("2025-03-11")
+                .email("john.doe@example.com")
+                .build();
 
         when(request.getParameter("customerId")).thenReturn("1");
         when(customerService.getCustomerById(1)).thenReturn(customer);

@@ -34,7 +34,16 @@ class DriverDaoImplTest {
 
     @Test
     void testSaveDriver_WhenDriverAlreadyExists() throws SQLException {
-        DriverEntity driverEntity = new DriverEntity(1, "John Doe", "AB1234", "Active", "Morning", 50000, 5, "123456789");
+        DriverEntity driverEntity = new DriverEntity.Builder()
+                .driverId(1)
+                .name("John Doe")
+                .licenseNumber("AB1234")
+                .status("Active")
+                .shiftTiming("Morning")
+                .salary(50000)
+                .experienceYears(5)
+                .phoneNumber("123456789")
+                .build();
 
         // Mock the PreparedStatement to simulate the existence check
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStmt);
@@ -49,10 +58,18 @@ class DriverDaoImplTest {
         verify(mockStmt, times(1)).executeQuery();
     }
 
-
     @Test
     void testSaveDriver_Success() throws SQLException {
-        DriverEntity driverEntity = new DriverEntity(1, "John Doe", "AB1234", "Active", "Morning", 50000, 5, "123456789");
+        DriverEntity driverEntity = new DriverEntity.Builder()
+                .driverId(1)
+                .name("John Doe")
+                .licenseNumber("AB1234")
+                .status("Active")
+                .shiftTiming("Morning")
+                .salary(50000)
+                .experienceYears(5)
+                .phoneNumber("123456789")
+                .build();
 
         // Mock the PreparedStatement and the ResultSet
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStmt);
@@ -72,11 +89,18 @@ class DriverDaoImplTest {
         verify(mockStmt, times(1)).executeQuery();
     }
 
-
-
     @Test
     void testGetById_WhenDriverExists() throws SQLException {
-        DriverEntity expectedDriver = new DriverEntity(1, "John Doe", "AB1234", "Active", "Morning", 50000, 5, "123456789");
+        DriverEntity expectedDriver = new DriverEntity.Builder()
+                .driverId(1)
+                .name("John Doe")
+                .licenseNumber("AB1234")
+                .status("Active")
+                .shiftTiming("Morning")
+                .salary(50000)
+                .experienceYears(5)
+                .phoneNumber("123456789")
+                .build();
 
         // Mock the PreparedStatement and ResultSet to simulate a driver being found
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStmt);
@@ -107,11 +131,18 @@ class DriverDaoImplTest {
         assertThrows(NotFoundException.class, () -> driverDaoImpl.getById(999));
     }
 
-
-
     @Test
     void testUpdateDriver_Success() throws SQLException {
-        DriverEntity driverEntity = new DriverEntity(1, "John Doe", "AB1234", "Active", "Morning", 50000, 5, "123456789");
+        DriverEntity driverEntity = new DriverEntity.Builder()
+                .driverId(1)
+                .name("John Doe")
+                .licenseNumber("AB1234")
+                .status("Active")
+                .shiftTiming("Morning")
+                .salary(50000)
+                .experienceYears(5)
+                .phoneNumber("123456789")
+                .build();
 
         // Mock the PreparedStatement for checking if the driver exists
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStmt);
@@ -129,8 +160,6 @@ class DriverDaoImplTest {
         verify(mockStmt, times(1)).executeUpdate();
         verify(mockStmt, times(1)).executeQuery();
     }
-
-
 
     @Test
     void testDeleteDriver_WhenDriverExists() throws SQLException {
@@ -151,8 +180,6 @@ class DriverDaoImplTest {
         verify(mockStmt, times(1)).executeQuery();
     }
 
-
-
     @Test
     void testDeleteDriver_WhenDriverDoesNotExist() throws SQLException {
         // Mock the PreparedStatement for checking driver existence
@@ -166,8 +193,6 @@ class DriverDaoImplTest {
         verify(mockStmt, times(1)).executeQuery();
     }
 
-
-
     @Test
     void testExistsById_WhenDriverExists() throws SQLException {
         // Mock the PreparedStatement and ResultSet for existence check
@@ -179,8 +204,6 @@ class DriverDaoImplTest {
         boolean result = driverDaoImpl.existsById(1);
         assertTrue(result);
     }
-
-
 
     @Test
     void testExistsById_WhenDriverDoesNotExist() throws SQLException {

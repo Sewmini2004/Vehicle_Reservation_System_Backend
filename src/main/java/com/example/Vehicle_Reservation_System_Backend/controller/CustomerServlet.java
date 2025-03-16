@@ -1,10 +1,10 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.CustomerDTO;
-import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.factory.CustomerServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
+import com.example.Vehicle_Reservation_System_Backend.utils.EmailBuilder;
 import com.example.Vehicle_Reservation_System_Backend.utils.JsonUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -15,10 +15,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-
+@WebServlet("/customers")
 public class CustomerServlet extends HttpServlet {
 
-    public CustomerService customerService;
+    protected CustomerService customerService;
 
     @Override
     public void init() throws ServletException {
@@ -65,8 +65,17 @@ public class CustomerServlet extends HttpServlet {
                 return;
             }
 
-            // Create DTO object
-            CustomerDTO customerDTO = new CustomerDTO(customerId, userId, name, address, nic, phone, registrationDate, email);
+            // Create DTO object using the Builder pattern
+            CustomerDTO customerDTO = new CustomerDTO.Builder()
+                    .customerId(customerId)
+                    .userId(userId)
+                    .name(name)
+                    .address(address)
+                    .nic(nic)
+                    .phoneNumber(phone)
+                    .registrationDate(registrationDate)
+                    .email(email)
+                    .build();
 
             // Check if customer already exists
             if (customerService.existsById(customerId)) {
@@ -101,22 +110,20 @@ public class CustomerServlet extends HttpServlet {
 
     // Method to print the email content to the console
     private void printConfirmationEmailContent(CustomerDTO customerDTO) {
-        // Create the email content with actual customer details
-        String emailContent = "Dear " + customerDTO.getName() + ",\n\n" +
-                "Thank you for registering with our service!\n\n" +
-                "We are pleased to confirm your registration. Your details are as follows:\n" +
-                "Name: " + customerDTO.getName() + "\n" +  // Customer name
-                "Email: " + customerDTO.getEmail() + "\n" + // Customer email
-                "Phone: " + customerDTO.getPhoneNumber() + "\n" + // Customer phone
-                "Registration Date: " + customerDTO.getRegistrationDate() + "\n\n" + // Customer registration date
-                "Best Regards,\nYour Service Team";
+        // Use the EmailBuilder to construct the email content
+        String emailContent = new EmailBuilder()
+                .addGreeting(customerDTO.getName())
+                .addThankYouMessage()
+                .addCustomerDetails(customerDTO)
+                .addClosing()
+                .build();
 
         // Print the email content to the console
         System.out.println("Confirmation Email Content:");
         System.out.println(emailContent);  // This is where the email content is printed
     }
 
-
+    // READ (GET) - Retrieve customer(s)
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         try {
@@ -164,7 +171,6 @@ public class CustomerServlet extends HttpServlet {
         }
     }
 
-
     // UPDATE (PUT) - Modify customer details
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -186,8 +192,19 @@ public class CustomerServlet extends HttpServlet {
             String email = JsonUtils.extractJsonValue(jsonData, "email");
             String phone = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
 
-            CustomerDTO customerDTO = new CustomerDTO(customerId, userId, name, address, nic, phone, registrationDate, email);
+            // Use the Builder pattern to create the CustomerDTO
+            CustomerDTO customerDTO = new CustomerDTO.Builder()
+                    .customerId(customerId)
+                    .userId(userId)
+                    .name(name)
+                    .address(address)
+                    .nic(nic)
+                    .phoneNumber(phone)
+                    .registrationDate(registrationDate)
+                    .email(email)
+                    .build();
 
+            // Update the customer
             if (customerService.updateCustomer(customerDTO)) {
                 response.setStatus(HttpServletResponse.SC_OK); // Success
                 response.setContentType("application/json"); // Set the response content type to JSON
@@ -208,9 +225,6 @@ public class CustomerServlet extends HttpServlet {
             response.getWriter().write("{\"Error\": \"An error occurred while updating customer.\"}");
         }
     }
-
-
-
 
     // DELETE (DELETE) - Remove a customer
     @Override
@@ -233,7 +247,7 @@ public class CustomerServlet extends HttpServlet {
                 response.getWriter().write("{\"message\": \"Customer deleted successfully!\"}");
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR); // HTTP status 500 Internal Server Error
-                response.setContentType("application/json"); // Set response type to JSON
+                response.setContentType("application/json");
                 response.getWriter().write("{\"Error\": \"Error deleting customer.\"}");
             }
         } catch (Exception e) {
@@ -243,5 +257,4 @@ public class CustomerServlet extends HttpServlet {
             response.getWriter().write("{\"Error\": \"An error occurred while deleting customer.\"}");
         }
     }
-
 }

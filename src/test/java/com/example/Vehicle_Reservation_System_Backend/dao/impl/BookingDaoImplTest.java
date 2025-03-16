@@ -38,7 +38,19 @@ class BookingDaoImplTest {
     @Test
     void testSaveBooking_Success() throws SQLException {
         // Create a mock BookingEntity
-        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0,2,"");
+        BookingEntity booking = new BookingEntity.Builder()
+                .bookingId(1)
+                .customerId(1)
+                .vehicleId(1)
+                .driverId(1)
+                .pickupLocation("Location A")
+                .dropLocation("Location B")
+                .bookingDate(new java.util.Date())  // Current date
+                .carType("Sedan")
+                .totalBill(100.0)
+                .distance(2)
+                .cancelStatus("")  // Empty cancel status
+                .build();
 
         // Mock the PreparedStatement behavior for the insert query
         when(mockConnection.prepareStatement(anyString(), eq(Statement.RETURN_GENERATED_KEYS))).thenReturn(mockStmt);
@@ -59,7 +71,20 @@ class BookingDaoImplTest {
     @Test
     void testSaveBooking_Failure() throws SQLException {
         // Create a mock BookingEntity
-        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0,4,"");
+        BookingEntity booking = new BookingEntity.Builder()
+                .bookingId(1)
+                .customerId(1)
+                .vehicleId(1)
+                .driverId(1)
+                .pickupLocation("Location A")
+                .dropLocation("Location B")
+                .bookingDate(new java.util.Date()) // Use the current date
+                .carType("Sedan")
+                .totalBill(100.0)
+                .distance(4) // Distance in km (or whatever unit you need)
+                .cancelStatus("") // Empty string for cancel status
+                .build();
+
 
         // Mock the PreparedStatement behavior to simulate no generated keys
         when(mockConnection.prepareStatement(anyString(), eq(Statement.RETURN_GENERATED_KEYS))).thenReturn(mockStmt);
@@ -119,7 +144,19 @@ class BookingDaoImplTest {
 
     @Test
     void testUpdateBooking_Success() throws SQLException {
-        BookingEntity booking = new BookingEntity(1, 1, 1, 1, "Location A", "Location B", new java.util.Date(), "Sedan", 100.0,2,"");
+        BookingEntity booking = new BookingEntity.Builder()
+                .bookingId(1)
+                .customerId(1)
+                .vehicleId(1)
+                .driverId(1)
+                .pickupLocation("Location A")
+                .dropLocation("Location B")
+                .bookingDate(new java.util.Date())
+                .carType("Sedan")
+                .totalBill(100.0)
+                .distance(2)
+                .cancelStatus("")
+                .build();
 
         // Mock PreparedStatement for the update query
         when(mockConnection.prepareStatement(anyString())).thenReturn(mockStmt);

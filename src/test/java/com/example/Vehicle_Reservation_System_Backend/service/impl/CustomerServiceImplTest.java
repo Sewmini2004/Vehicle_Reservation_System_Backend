@@ -20,8 +20,8 @@ class CustomerServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        customerDaoMock = mock(CustomerDao.class); // Mock the CustomerDao
-        customerService = new CustomerServiceImpl(customerDaoMock); // Pass the mock to the service
+        customerDaoMock = mock(CustomerDao.class);
+        customerService = new CustomerServiceImpl(customerDaoMock);
     }
 
     @AfterEach
@@ -31,44 +31,55 @@ class CustomerServiceImplTest {
 
     @Test
     void testAddCustomerValidData() throws SQLException {
-        // Create a valid CustomerDTO object with all the fields populated
-        CustomerDTO customerDTO = new CustomerDTO(
-                1,  // customerId
-                101, // userId
-                "John Doe", // name
-                "123 Main St", // address
-                "199012345678", // NIC
-                "0712345678", // phoneNumber
-                "2025-03-12", // registrationDate
-                "john.doe@example.com" // email
-        );
+        // Create a valid CustomerDTO object using the Builder pattern
+        CustomerDTO customerDTO = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("199012345678")
+                .phoneNumber("0712345678")
+                .registrationDate("2025-03-12")
+                .email("john.doe@example.com")
+                .build();
 
-        // Mock the behavior of customerDao
         when(customerDaoMock.saveCustomer(any(CustomerEntity.class))).thenReturn(true);
 
-        // Test the addCustomer method
         boolean result = customerService.addCustomer(customerDTO);
 
-        assertTrue(result); // Assert that the customer was added successfully
+        assertTrue(result);
     }
 
     @Test
     void testAddCustomerInvalidEmail() {
-        // Create a CustomerDTO with invalid email
-        CustomerDTO customerDTO = new CustomerDTO(
-                1, 101, "John Doe", "123 Main St", "199012345678", "0712345678", "2025-03-12", "invalid-email"
-        );
+        // Create a CustomerDTO with invalid email using the Builder pattern
+        CustomerDTO customerDTO = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("199012345678")
+                .phoneNumber("0712345678")
+                .registrationDate("2025-03-12")
+                .email("invalid-email")
+                .build();
 
-        // Assert that adding a customer with an invalid email throws an exception
         assertThrows(IllegalArgumentException.class, () -> customerService.addCustomer(customerDTO));
     }
 
     @Test
     void testAddCustomerInvalidNIC() {
-        // Create a CustomerDTO with invalid NIC
-        CustomerDTO customerDTO = new CustomerDTO(
-                1, 101, "John Doe", "123 Main St", "invalid-nic", "0712345678", "2025-03-12", "john.doe@example.com"
-        );
+        // Create a CustomerDTO with invalid NIC using the Builder pattern
+        CustomerDTO customerDTO = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("invalid-nic")
+                .phoneNumber("0712345678")
+                .registrationDate("2025-03-12")
+                .email("john.doe@example.com")
+                .build();
 
         // Assert that adding a customer with an invalid NIC throws an exception
         assertThrows(IllegalArgumentException.class, () -> customerService.addCustomer(customerDTO));
@@ -77,36 +88,47 @@ class CustomerServiceImplTest {
     @Test
     void testGetCustomerById() {
         // Create a mock CustomerEntity with valid data
-        CustomerEntity mockCustomerEntity = new CustomerEntity(1, 101,"John Doe", "123 Main St", "199012345678", "0712345678", "2025-03-12", "john.doe@example.com");
+        CustomerEntity mockCustomerEntity = new CustomerEntity.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("199012345678")
+                .phoneNumber("0712345678")
+                .registrationDate("2025-03-12")
+                .email("john.doe@example.com")
+                .build();
+
         when(customerDaoMock.getById(1)).thenReturn(mockCustomerEntity);
 
         // Test the getCustomerById method
         CustomerDTO result = customerService.getCustomerById(1);
 
-        assertNotNull(result); // Assert that the result is not null
-        assertEquals("John Doe", result.getName()); // Assert that the customer name is correct
-        assertEquals("john.doe@example.com", result.getEmail()); // Assert that the customer email is correct
+        assertNotNull(result);
+        assertEquals("John Doe", result.getName());
+        assertEquals("john.doe@example.com", result.getEmail());
     }
-
-
 
     @Test
     void testGetCustomerByIdNotFound() {
-        // Mock the behavior of customerDao for a non-existing customer
-        when(customerDaoMock.getById(999)).thenReturn(null); // Returning null to simulate customer not found
+        when(customerDaoMock.getById(999)).thenReturn(null);
 
-        // Test that the getCustomerById method throws NotFoundException for a non-existing customer
         assertThrows(NotFoundException.class, () -> customerService.getCustomerById(999));
     }
 
-
-
     @Test
     void testUpdateCustomer() {
-        // Create a valid CustomerDTO object
-        CustomerDTO customerDTO = new CustomerDTO(
-                1, 101, "John Doe", "123 Main St", "199012345678", "0712345678", "2025-03-12", "john.doe@example.com"
-        );
+        // Create a valid CustomerDTO object using the Builder pattern
+        CustomerDTO customerDTO = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("199012345678")
+                .phoneNumber("0712345678")
+                .registrationDate("2025-03-12")
+                .email("john.doe@example.com")
+                .build();
 
         // Mock the behavior of customerDao
         when(customerDaoMock.existsById(1)).thenReturn(true);
@@ -115,20 +137,25 @@ class CustomerServiceImplTest {
         // Test the updateCustomer method
         boolean result = customerService.updateCustomer(customerDTO);
 
-        assertTrue(result); // Assert that the customer was updated successfully
+        assertTrue(result);
     }
 
     @Test
     void testUpdateCustomerNotFound() {
-        // Create a valid CustomerDTO object
-        CustomerDTO customerDTO = new CustomerDTO(
-                1, 101, "John Doe", "123 Main St", "199012345678", "0712345678", "2025-03-12", "john.doe@example.com"
-        );
+        // Create a valid CustomerDTO object using the Builder pattern
+        CustomerDTO customerDTO = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("199012345678")
+                .phoneNumber("0712345678")
+                .registrationDate("2025-03-12")
+                .email("john.doe@example.com")
+                .build();
 
-        // Mock the behavior of customerDao
         when(customerDaoMock.existsById(1)).thenReturn(false);
 
-        // Test that the updateCustomer method throws NotFoundException
         assertThrows(NotFoundException.class, () -> customerService.updateCustomer(customerDTO));
     }
 
@@ -140,18 +167,14 @@ class CustomerServiceImplTest {
         // Test the deleteCustomer method
         boolean result = customerService.deleteCustomer(1);
 
-        assertTrue(result); // Assert that the customer was deleted successfully
+        assertTrue(result);
     }
-
-
 
     @Test
     void testDeleteCustomerNotFound() {
         // Mock the behavior of customerDao
-        when(customerDaoMock.deleteCustomer(999)).thenReturn(false); // Simulating that the customer does not exist
+        when(customerDaoMock.deleteCustomer(999)).thenReturn(false);
 
-        // Test that the deleteCustomer method throws NotFoundException for a non-existing customer
         assertThrows(NotFoundException.class, () -> customerService.deleteCustomer(999));
     }
-
 }

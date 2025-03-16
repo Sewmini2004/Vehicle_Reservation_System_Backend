@@ -1,17 +1,11 @@
 package com.example.Vehicle_Reservation_System_Backend.service.impl;
 
 import com.example.Vehicle_Reservation_System_Backend.dao.CustomerDao;
-import com.example.Vehicle_Reservation_System_Backend.dao.impl.CustomerDaoImpl;
 import com.example.Vehicle_Reservation_System_Backend.dto.CustomerDTO;
-import com.example.Vehicle_Reservation_System_Backend.dto.VehicleDTO;
 import com.example.Vehicle_Reservation_System_Backend.entity.CustomerEntity;
-import com.example.Vehicle_Reservation_System_Backend.entity.VehicleEntity;
-import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
 import com.example.Vehicle_Reservation_System_Backend.utils.CustomerConverter;
-import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
-import com.example.Vehicle_Reservation_System_Backend.utils.VehicleConverter;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -41,7 +35,18 @@ public class CustomerServiceImpl implements CustomerService {
             throw new IllegalArgumentException("Invalid NIC format.");
         }
 
-        CustomerEntity customerEntity = CustomerConverter.convertToEntity(customerDTO);
+        // Create CustomerEntity using the Builder Pattern
+        CustomerEntity customerEntity = new CustomerEntity.Builder()
+                .customerId(customerDTO.getCustomerId())
+                .userId(customerDTO.getUserId())
+                .name(customerDTO.getName())
+                .address(customerDTO.getAddress())
+                .nic(customerDTO.getNic())
+                .phoneNumber(customerDTO.getPhoneNumber())
+                .registrationDate(customerDTO.getRegistrationDate())
+                .email(customerDTO.getEmail())
+                .build();
+
         try {
             return customerDao.saveCustomer(customerEntity);
         } catch (Exception e) {
@@ -58,7 +63,6 @@ public class CustomerServiceImpl implements CustomerService {
         return CustomerConverter.convertToDTO(customerEntity);
     }
 
-
     @Override
     public boolean existsById(int customerId) {
         return customerDao.existsById(customerId);
@@ -74,11 +78,24 @@ public class CustomerServiceImpl implements CustomerService {
         if (!isValidNIC(customerDTO.getNic())) {
             throw new IllegalArgumentException("Invalid NIC format.");
         }
-        Boolean isExists = existsById(customerDTO.getCustomerId());
+
+        boolean isExists = existsById(customerDTO.getCustomerId());
         if (!isExists) {
-            throw new NotFoundException("Customer is not found");
+            throw new NotFoundException("Customer not found with ID: " + customerDTO.getCustomerId());
         }
-        CustomerEntity customerEntity = CustomerConverter.convertToEntity(customerDTO);
+
+        // Create CustomerEntity using the Builder Pattern
+        CustomerEntity customerEntity = new CustomerEntity.Builder()
+                .customerId(customerDTO.getCustomerId())
+                .userId(customerDTO.getUserId())
+                .name(customerDTO.getName())
+                .address(customerDTO.getAddress())
+                .nic(customerDTO.getNic())
+                .phoneNumber(customerDTO.getPhoneNumber())
+                .registrationDate(customerDTO.getRegistrationDate())
+                .email(customerDTO.getEmail())
+                .build();
+
         try {
             return customerDao.updateCustomer(customerEntity);
         } catch (NotFoundException e) {
@@ -86,10 +103,8 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
-
     @Override
     public boolean deleteCustomer(int customerId) {
-        // Check if the customer exists before attempting to delete
         boolean deleted = customerDao.deleteCustomer(customerId);
         if (!deleted) {
             throw new NotFoundException("Customer not found with ID: " + customerId);
@@ -97,14 +112,12 @@ public class CustomerServiceImpl implements CustomerService {
         return true;
     }
 
-
-
-
     @Override
     public List<CustomerDTO> getAllCustomers() {
-        DBConnection.getInstance().getConnection();
         List<CustomerEntity> customerEntities = customerDao.getAllCustomers();
-        return customerEntities.stream().map(CustomerConverter::convertToDTO).collect(Collectors.toList());
+        return customerEntities.stream()
+                .map(CustomerConverter::convertToDTO)
+                .collect(Collectors.toList());
     }
 
     // Helper method to validate email format
@@ -124,7 +137,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public List<CustomerDTO> searchCustomers(String searchTerm) {
         List<CustomerEntity> customerEntities = customerDao.searchCustomers(searchTerm);
-        return customerEntities.stream().map(CustomerConverter::convertToDTO).collect(Collectors.toList());
+        return customerEntities.stream()
+                .map(CustomerConverter::convertToDTO)
+                .collect(Collectors.toList());
     }
+
 
 }

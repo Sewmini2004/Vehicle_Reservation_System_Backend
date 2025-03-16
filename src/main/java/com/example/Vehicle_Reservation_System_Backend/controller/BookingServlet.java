@@ -2,10 +2,14 @@ package com.example.Vehicle_Reservation_System_Backend.controller;
 
 import com.example.Vehicle_Reservation_System_Backend.dto.BillingDTO;
 import com.example.Vehicle_Reservation_System_Backend.dto.BookingDTO;
+import com.example.Vehicle_Reservation_System_Backend.dto.CustomerDTO;
+import com.example.Vehicle_Reservation_System_Backend.dto.DriverDTO;
 import com.example.Vehicle_Reservation_System_Backend.exception.DateFormatException;
+import com.example.Vehicle_Reservation_System_Backend.factory.CustomerServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.factory.VehicleServiceFactory;
 import com.example.Vehicle_Reservation_System_Backend.service.BookingService;
 import com.example.Vehicle_Reservation_System_Backend.factory.BookingServiceFactory;
+import com.example.Vehicle_Reservation_System_Backend.service.CustomerService;
 import com.example.Vehicle_Reservation_System_Backend.service.VehicleService;
 import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 import com.example.Vehicle_Reservation_System_Backend.utils.DateFormatUtils;
@@ -26,12 +30,14 @@ import java.util.List;
 public class BookingServlet extends HttpServlet {
     private BookingService bookingService;
     private VehicleService vehicleService;
+    private CustomerService customerService;
 
     @Override
     public void init() throws ServletException {
         try {
             vehicleService = VehicleServiceFactory.getVehicleService();
             bookingService = BookingServiceFactory.createBookingService();
+            customerService = CustomerServiceFactory.getCustomerService();
         } catch (SQLException throwables) {
             System.out.println("LOGG:Booking service creation with service factory");
             System.out.println("LOGG:vehicle service creation with service factory");
@@ -51,8 +57,6 @@ public class BookingServlet extends HttpServlet {
             // Parse and extract vehicleId from the request data
             int vehicleId = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "vehicleId"));
             // Ensure that the vehicle exists in the database
-            System.out.println("Vehicle ID : " + vehicleId);
-            DBConnection.getInstance().getConnection();
             if (!vehicleService.existsById(vehicleId)) {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("application/json");
@@ -68,6 +72,8 @@ public class BookingServlet extends HttpServlet {
             String carType = JsonUtils.extractJsonValue(jsonData, "carType");
             String paymentMethod = JsonUtils.extractJsonValue(jsonData, "paymentMethod");
             String paymentStatus = JsonUtils.extractJsonValue(jsonData, "paymentStatus");
+            double discountAmount = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "discountAmount"));
+            double taxAmount = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "taxAmount"));
 
             // Handle invalid totalBill input
             double totalBill = 0.0;
@@ -76,26 +82,68 @@ public class BookingServlet extends HttpServlet {
                 totalBill = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "totalBill"));
                 distance = Double.parseDouble(JsonUtils.extractJsonValue(jsonData, "distance"));
             } catch (NumberFormatException e) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure 400 Bad Request status
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
                 response.setContentType("application/json");
-                // Fix the message to avoid the duplication of "For input string:"
                 response.getWriter().write("{\"Error\": \"Invalid number format: " + e.getMessage() + "\"}");
-                return; // Ensure no further processing is done after catching the exception
+                return;
             }
 
+            // Check if customer exists
+            CustomerDTO customerDTO = customerService.getCustomerById(customerId);
+            if (customerDTO == null) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setContentType("application/json");
+                response.getWriter().write("{\"Error\": \"Customer not found with ID: " + customerId + "\"}");
+                return;
+            }
 
             // Create a BookingDTO object from the extracted data
-            BookingDTO bookingDTO = new BookingDTO(0, customerId, vehicleId, driverId, pickupLocation, dropLocation, new Date(), carType, totalBill, "", distance, "", "", "", "");
+
+            BookingDTO bookingDTO = new BookingDTO.Builder()
+                    .bookingId(0)  // default value
+                    .customerId(customerId)
+                    .vehicleId(vehicleId)
+                    .driverId(driverId)
+                    .pickupLocation(pickupLocation)
+                    .dropLocation(dropLocation)
+                    .bookingDate(new Date()) // Default to current date if needed
+                    .carType(carType)
+                    .totalBill(totalBill)
+                    .cancelStatus("") // Default value or empty string if needed
+                    .distance(distance)
+                    .customerName("")
+                    .driverName("")
+                    .vehicleModel("")
+                    .vehicleRegistrationNumber("")
+                    .build();
+
+            // Create a BillingDTO object and set relevant values
             BillingDTO billingDTO = new BillingDTO();
             billingDTO.setPaymentMethod(paymentMethod);
             billingDTO.setPaymentStatus(paymentStatus);
+
+            // Here we set the totalAmount, discountAmount, taxAmount, finalAmount
+            billingDTO.setTotalAmount(totalBill);  // Assuming no discount and tax, set it as the totalBill
+            billingDTO.setDiscountAmount(discountAmount);    // If there's a discount, adjust here
+            billingDTO.setTaxAmount(taxAmount);         // If there's tax, adjust here
+            billingDTO.setFinalAmount(totalBill); // Final amount after applying any discounts/taxes
+
+            // Set the billing details in the bookingDTO
             bookingDTO.setBillingDetails(billingDTO);
+
             // Call the service method to add the booking
             boolean isBookingCreated = bookingService.addBooking(bookingDTO);
             if (isBookingCreated) {
+                // Booking created successfully
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.setContentType("application/json");
                 response.getWriter().write("{\"Message\": \"Booking successfully created.\"}");
+
+                // Generate the confirmation email
+                sendConfirmationEmail(customerDTO, bookingDTO);
+
+                // Generate eBill content
+                generateBill(billingDTO);
             } else {
                 response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                 response.setContentType("application/json");
@@ -103,12 +151,46 @@ public class BookingServlet extends HttpServlet {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            // Catch any other exceptions and return appropriate message
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             response.setContentType("application/json");
             response.getWriter().write("{\"Error\": \"Invalid booking data: " + e.getMessage() + "\"}");
         }
     }
+
+    // Send confirmation email to the customer
+    private void sendConfirmationEmail(CustomerDTO customerDTO, BookingDTO bookingDTO) {
+        String emailContent = "Dear " + customerDTO.getName() + ",\n\n" +
+                "Thank you for registering with our Mega City Cab service!\n\n" +
+                "We are pleased to confirm your booking. Your details are as follows:\n" +
+                "Name: " + customerDTO.getName() + "\n" +
+                "Email: " + customerDTO.getEmail() + "\n" +
+                "Phone: " + customerDTO.getPhoneNumber() + "\n" +
+                "Booking Details:\n" +
+                "Pickup Location: " + bookingDTO.getPickupLocation() + "\n" +
+                "Drop Location: " + bookingDTO.getDropLocation() + "\n" +
+                "Booking Date: " + bookingDTO.getBookingDate() + "\n\n" +
+                "Best Regards,\nYour Service Team";
+
+        System.out.println("Confirmation Email Content:");
+        System.out.println(emailContent);
+    }
+
+    // Generate eBill after booking creation
+    private void generateBill(BillingDTO billingDTO) {
+        String billContent = "Billing Details:\n" +
+                "Total Amount: " + billingDTO.getTotalAmount() + "\n" +
+                "Discount: " + billingDTO.getDiscountAmount() + "\n" +
+                "Tax Amount: " + billingDTO.getTaxAmount() + "\n" +
+                "Final Amount: " + billingDTO.getFinalAmount() + "\n" +
+                "Payment Method: " + billingDTO.getPaymentMethod() + "\n" +
+                "Payment Status: " + billingDTO.getPaymentStatus() + "\n\n" +
+                "Thank you for choosing our service!\n\n" +
+                "Best Regards,\nYour Service Team";
+
+        System.out.println("eBill Content:");
+        System.out.println(billContent);
+    }
+
 
 
     // READ (GET) - Fetch a specific booking by ID or list all bookings
@@ -193,8 +275,20 @@ public class BookingServlet extends HttpServlet {
 
             Date originalBookingDate = DateFormatUtils.toDate(JsonUtils.extractJsonValue(jsonData, "bookingDate"));
 
-            BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill, "", distance);
-
+          //  BookingDTO updatedBooking = new BookingDTO(bookingId, customerId, vehicleId, driverId, pickupLocation, dropLocation, originalBookingDate, carType, totalBill, "", distance);
+            BookingDTO updatedBooking = new BookingDTO.Builder()
+                    .bookingId(bookingId)
+                    .customerId(customerId)
+                    .vehicleId(vehicleId)
+                    .driverId(driverId)
+                    .pickupLocation(pickupLocation)
+                    .dropLocation(dropLocation)
+                    .bookingDate(new Date())
+                    .carType(carType)
+                    .totalBill(totalBill)
+                    .cancelStatus("")
+                    .distance(distance)
+                    .build();
             // Update the booking in the system
             if (bookingService.updateBooking(updatedBooking)) {
                 response.setStatus(HttpServletResponse.SC_OK);  // Ensure status is set to 200 OK

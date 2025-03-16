@@ -43,8 +43,16 @@ public class DriverServlet extends HttpServlet {
                 return;
             }
 
-            DriverDTO driver = new DriverDTO(0, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
-
+            DriverDTO driver = new DriverDTO.Builder()
+                    .driverId(0)
+                    .name(name)
+                    .licenseNumber(licenseNumber)
+                    .status(status)
+                    .shiftTiming(shiftTiming)
+                    .salary(salary)
+                    .experienceYears(experienceYears)
+                    .phoneNumber(phoneNumber)
+                    .build();
             if (driverService.addDriver(driver)) {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 response.getWriter().write("{\"Message\" : \"Driver added successfully.\"}");
@@ -109,8 +117,16 @@ public class DriverServlet extends HttpServlet {
             double salary = Double.parseDouble(salary1);
             int experienceYears = Integer.parseInt(JsonUtils.extractJsonValue(jsonData, "experienceYears"));
             String phoneNumber = JsonUtils.extractJsonValue(jsonData, "phoneNumber");
-
-            DriverDTO driver = new DriverDTO(driverId, name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber);
+            DriverDTO driver = new DriverDTO.Builder()
+                    .driverId(driverId)
+                    .name(name)
+                    .licenseNumber(licenseNumber)
+                    .status(status)
+                    .shiftTiming(shiftTiming)
+                    .salary(salary)
+                    .experienceYears(experienceYears)
+                    .phoneNumber(phoneNumber)
+                    .build();
 
             if (driverService.updateDriver(driver)) {
                 response.setStatus(HttpServletResponse.SC_OK);

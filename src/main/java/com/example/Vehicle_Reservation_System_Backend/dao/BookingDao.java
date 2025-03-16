@@ -10,4 +10,7 @@ public interface BookingDao {
     List<BookingEntity> getAllBookings();
     boolean updateBooking(BookingEntity booking);
     boolean deleteBooking(int bookingId);
+    public List<BookingEntity> searchBookings(String searchTerm);
+
+
 }

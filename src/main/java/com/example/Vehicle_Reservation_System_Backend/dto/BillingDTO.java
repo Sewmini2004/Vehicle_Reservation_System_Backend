@@ -12,6 +12,42 @@ public class BillingDTO {
     private String paymentMethod;
     private String paymentStatus;
 
+    public int billId() {
+        return billId;
+    }
+
+    public int bookingId() {
+        return bookingId;
+    }
+
+    public double totalAmount() {
+        return totalAmount;
+    }
+
+    public double discountAmount() {
+        return discountAmount;
+    }
+
+    public double taxAmount() {
+        return taxAmount;
+    }
+
+    public double finalAmount() {
+        return finalAmount;
+    }
+
+    public String paymentMethod() {
+        return paymentMethod;
+    }
+
+    public String paymentStatus() {
+        return paymentStatus;
+    }
+
+    public Timestamp createdAt() {
+        return createdAt;
+    }
+
     public int getBillId() {
         return billId;
     }

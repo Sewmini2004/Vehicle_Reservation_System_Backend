@@ -10,81 +10,104 @@ public class DriverDTO {
     private int experienceYears;
     private String phoneNumber;
 
-    public DriverDTO(int driverId, String name, String licenseNumber, String status, String shiftTiming, double salary, int experienceYears, String phoneNumber) {
-        this.driverId = driverId;
-        this.name = name;
-        this.licenseNumber = licenseNumber;
-        this.status = status;
-        this.shiftTiming = shiftTiming;
-        this.salary = salary;
-        this.experienceYears = experienceYears;
-        this.phoneNumber = phoneNumber;
+    // Builder class
+    public static class Builder {
+        private int driverId;
+        private String name;
+        private String licenseNumber;
+        private String status;
+        private String shiftTiming;
+        private double salary;
+        private int experienceYears;
+        private String phoneNumber;
+
+        public Builder driverId(int driverId) {
+            this.driverId = driverId;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder licenseNumber(String licenseNumber) {
+            this.licenseNumber = licenseNumber;
+            return this;
+        }
+
+        public Builder status(String status) {
+            this.status = status;
+            return this;
+        }
+
+        public Builder shiftTiming(String shiftTiming) {
+            this.shiftTiming = shiftTiming;
+            return this;
+        }
+
+        public Builder salary(double salary) {
+            this.salary = salary;
+            return this;
+        }
+
+        public Builder experienceYears(int experienceYears) {
+            this.experienceYears = experienceYears;
+            return this;
+        }
+
+        public Builder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public DriverDTO build() {
+            return new DriverDTO(this);
+        }
     }
 
-    public DriverDTO() {
+    // Private constructor to use Builder pattern
+    private DriverDTO(Builder builder) {
+        this.driverId = builder.driverId;
+        this.name = builder.name;
+        this.licenseNumber = builder.licenseNumber;
+        this.status = builder.status;
+        this.shiftTiming = builder.shiftTiming;
+        this.salary = builder.salary;
+        this.experienceYears = builder.experienceYears;
+        this.phoneNumber = builder.phoneNumber;
     }
 
+    // Getters
     public int getDriverId() {
         return driverId;
-    }
-
-    public void setDriverId(int driverId) {
-        this.driverId = driverId;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public String getLicenseNumber() {
         return licenseNumber;
-    }
-
-    public void setLicenseNumber(String licenseNumber) {
-        this.licenseNumber = licenseNumber;
     }
 
     public String getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getShiftTiming() {
         return shiftTiming;
-    }
-
-    public void setShiftTiming(String shiftTiming) {
-        this.shiftTiming = shiftTiming;
     }
 
     public double getSalary() {
         return salary;
     }
 
-    public void setSalary(double salary) {
-        this.salary = salary;
-    }
-
     public int getExperienceYears() {
         return experienceYears;
     }
 
-    public void setExperienceYears(int experienceYears) {
-        this.experienceYears = experienceYears;
-    }
-
     public String getPhoneNumber() {
         return phoneNumber;
-    }
-
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
     }
 }

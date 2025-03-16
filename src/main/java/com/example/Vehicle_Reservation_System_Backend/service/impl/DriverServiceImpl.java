@@ -1,11 +1,8 @@
 package com.example.Vehicle_Reservation_System_Backend.service.impl;
 
 import com.example.Vehicle_Reservation_System_Backend.dao.DriverDao;
-import com.example.Vehicle_Reservation_System_Backend.dao.impl.DriverDaoImpl;
 import com.example.Vehicle_Reservation_System_Backend.dto.DriverDTO;
 import com.example.Vehicle_Reservation_System_Backend.entity.DriverEntity;
-import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
-import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
 import com.example.Vehicle_Reservation_System_Backend.service.DriverService;
 import com.example.Vehicle_Reservation_System_Backend.utils.DriverConverter;
 
@@ -18,9 +15,8 @@ public class DriverServiceImpl implements DriverService {
 
     private DriverDao driverDao;
 
-    // Regex for license number and phone number validation
-    private static final String LICENSE_NUMBER_REGEX = "^[A-Z0-9-]{6,12}$";  // Example for license number format (modify if needed)
-    private static final String PHONE_NUMBER_REGEX = "^[0-9]{10}$";  // Assuming 10-digit phone number
+    private static final String LICENSE_NUMBER_REGEX = "^[A-Z0-9-]{6,12}$";
+    private static final String PHONE_NUMBER_REGEX = "^[0-9]{10}$";
 
     public DriverServiceImpl(DriverDao driverDao) {
         this.driverDao = driverDao;
@@ -28,7 +24,6 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public boolean addDriver(DriverDTO driverDTO) {
-        // Validate license number and phone number
         if (!isValidLicenseNumber(driverDTO.getLicenseNumber())) {
             throw new IllegalArgumentException("Invalid license number format.");
         }
@@ -38,11 +33,7 @@ public class DriverServiceImpl implements DriverService {
         }
 
         DriverEntity driverEntity = DriverConverter.convertToEntity(driverDTO);
-        try {
-            return driverDao.saveDriver(driverEntity);
-        } catch (AlreadyException e) {
-            throw e;  // Propagate the exception to the controller
-        }
+        return driverDao.saveDriver(driverEntity);
     }
 
     @Override
@@ -53,7 +44,6 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public boolean updateDriver(DriverDTO driverDTO) {
-        // Validate license number and phone number
         if (!isValidLicenseNumber(driverDTO.getLicenseNumber())) {
             throw new IllegalArgumentException("Invalid license number format.");
         }
@@ -63,11 +53,7 @@ public class DriverServiceImpl implements DriverService {
         }
 
         DriverEntity driverEntity = DriverConverter.convertToEntity(driverDTO);
-        try {
-            return driverDao.updateDriver(driverEntity);
-        } catch (NotFoundException e) {
-            throw e;  // Propagate the exception to the controller
-        }
+        return driverDao.updateDriver(driverEntity);
     }
 
     @Override
@@ -77,17 +63,15 @@ public class DriverServiceImpl implements DriverService {
 
     @Override
     public List<DriverDTO> getAllDrivers() {
-        return driverDao.getAllDrivers().stream().map(driverEntity -> DriverConverter.convertToDTO(driverEntity)).collect(Collectors.toList());
+        return driverDao.getAllDrivers().stream().map(DriverConverter::convertToDTO).collect(Collectors.toList());
     }
 
-    // Helper method to validate license number format
     private boolean isValidLicenseNumber(String licenseNumber) {
         Pattern pattern = Pattern.compile(LICENSE_NUMBER_REGEX);
         Matcher matcher = pattern.matcher(licenseNumber);
         return matcher.matches();
     }
 
-    // Helper method to validate phone number format
     private boolean isValidPhoneNumber(String phoneNumber) {
         Pattern pattern = Pattern.compile(PHONE_NUMBER_REGEX);
         Matcher matcher = pattern.matcher(phoneNumber);

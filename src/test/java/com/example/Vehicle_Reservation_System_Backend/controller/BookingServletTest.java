@@ -12,6 +12,7 @@ import org.mockito.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -73,7 +74,14 @@ class BookingServletTest {
     @Test
     void testGetBooking_ValidId() throws Exception {
         int bookingId = 1;
-        BookingDTO booking = new BookingDTO(bookingId, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0,"",0.0);
+        BookingDTO booking = new BookingDTO.Builder()
+                .bookingId(bookingId)
+                .bookingDate(new Date())
+                .driverId(1)
+                .vehicleId(1)
+                .customerId(1)
+                .build();
+//        bookingId, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0,"",0.0);
         when(requestMock.getParameter("bookingId")).thenReturn(String.valueOf(bookingId));
         when(bookingServiceMock.getBookingById(bookingId)).thenReturn(booking);
 
@@ -98,15 +106,29 @@ class BookingServletTest {
 
     @Test
     void testUpdateBooking_ValidUpdate() throws Exception {
+        // Creating a JSON string for the update request
         String json = "{\"bookingId\":1,\"customerId\":\"1\",\"vehicleId\":\"1\",\"driverId\":\"1\",\"pickupLocation\":\"A\",\"dropLocation\":\"B\",\"carType\":\"Sedan\",\"totalBill\":\"150.0\",\"bookingDate\":\"2025-03-11\"}";
         when(requestMock.getReader()).thenReturn(new BufferedReader(new StringReader(json)));
-        when(bookingServiceMock.getBookingById(anyInt())).thenReturn(new BookingDTO(1, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0, "", 0.0));
+        BookingDTO bookingDTO = new BookingDTO.Builder()
+                .bookingId(1)
+                .customerId(1)
+                .vehicleId(1)
+                .driverId(1)
+                .pickupLocation("A")
+                .dropLocation("B")
+                .carType("Sedan")
+                .totalBill(150.0)
+                .bookingDate(new java.util.Date())
+                .cancelStatus("")
+                .distance(0.0)
+                .build();
+        when(bookingServiceMock.getBookingById(anyInt())).thenReturn(bookingDTO);
+
         when(bookingServiceMock.updateBooking(any(BookingDTO.class))).thenReturn(true);
 
         bookingServlet.doPut(requestMock, responseMock);
-
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK); // Ensure OK status (200)
-        verify(writerMock).write("Booking updated successfully."); // Ensure success message
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK);
+        verify(writerMock).write("Booking updated successfully.");
     }
 
 
