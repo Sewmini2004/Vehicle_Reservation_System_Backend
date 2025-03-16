@@ -1,14 +1,17 @@
 package com.example.Vehicle_Reservation_System_Backend.entity;
 
+import java.sql.Timestamp;
+
 public class BillingEntity {
     private int billId;
     private int bookingId;
     private double totalAmount;
 
+    private Timestamp createdAt;
     public BillingEntity() {
     }
 
-    public BillingEntity(int billId, int bookingId, double totalAmount, double discountAmount, double taxAmount, double finalAmount, String paymentMethod, String paymentStatus) {
+    public BillingEntity(int billId, int bookingId, double totalAmount, double discountAmount, double taxAmount, double finalAmount, String paymentMethod, String paymentStatus, Timestamp createdAt) {
         this.billId = billId;
         this.bookingId = bookingId;
         this.totalAmount = totalAmount;
@@ -17,6 +20,7 @@ public class BillingEntity {
         this.finalAmount = finalAmount;
         this.paymentMethod = paymentMethod;
         this.paymentStatus = paymentStatus;
+        this.createdAt= createdAt;
     }
 
     public int getBillId() {
@@ -83,10 +87,19 @@ public class BillingEntity {
         this.paymentStatus = paymentStatus;
     }
 
+    public Timestamp getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Timestamp createdAt) {
+        this.createdAt = createdAt;
+    }
+
     private double discountAmount;
     private double taxAmount;
     private double finalAmount;
     private String paymentMethod;
     private String paymentStatus;
+
 
 }

@@ -11,4 +11,5 @@ public interface VehicleService {
     boolean updateVehicle(VehicleDTO vehicleDTO);
     boolean deleteVehicle(int vehicleId);
     boolean existsById(int vehicleId);
+    public List<VehicleDTO> searchVehicles(String searchTerm);
 }

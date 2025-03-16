@@ -21,6 +21,8 @@ public class CustomerDaoImpl implements CustomerDao {
     @Override
     public boolean saveCustomer(CustomerEntity customerEntity) throws SQLException {
         // Check if the email or NIC already exists
+        connection = DBConnection.getInstance().getConnection();
+
         try {
             String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE email = ? OR nic = ?";
             PreparedStatement stmt = connection.prepareStatement(queryCheckExistence);
@@ -56,21 +58,24 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public CustomerEntity getById(int id) {
+        connection = DBConnection.getInstance().getConnection();
+
         String query = "SELECT * FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, id);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                return new CustomerEntity(
-                        rs.getInt("customerId"),
-                        rs.getInt("userId"),
-                        rs.getString("name"),
-                        rs.getString("address"),
-                        rs.getString("nic"),
-                        rs.getString("phoneNumber"),
-                        rs.getString("registrationDate"),
-                        rs.getString("email")
-                );
+                // Using the Builder pattern to create the CustomerEntity
+                return new CustomerEntity.Builder()
+                        .customerId(rs.getInt("customerId"))
+                        .userId(rs.getInt("userId"))
+                        .name(rs.getString("name"))
+                        .address(rs.getString("address"))
+                        .nic(rs.getString("nic"))
+                        .phoneNumber(rs.getString("phoneNumber"))
+                        .registrationDate(rs.getString("registrationDate"))
+                        .email(rs.getString("email"))
+                        .build();
             } else {
                 throw new NotFoundException("Customer with ID " + id + " not found.");
             }
@@ -82,8 +87,8 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public boolean existsById(int id) {
-        // Check if the customer exists before updating
         connection = DBConnection.getInstance().getConnection();
+
         String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, id);
@@ -100,6 +105,8 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public boolean updateCustomer(CustomerEntity customerEntity) {
+        connection = DBConnection.getInstance().getConnection();
+
         // Check if the customer exists before updating
         if(!existsById(customerEntity.getCustomerId())) throw new NotFoundException("Customer with ID " + customerEntity.getCustomerId() + " not found.");
 
@@ -122,23 +129,26 @@ public class CustomerDaoImpl implements CustomerDao {
     }
 
     @Override
-    public boolean deleteCustomer(int id) {
+    public boolean deleteCustomer(int customerId) {
+        connection = DBConnection.getInstance().getConnection();
+
+        // First, check if the customer exists
         String queryCheckExistence = "SELECT COUNT(*) FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
-            stmt.setInt(1, id);
+            stmt.setInt(1, customerId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next() && rs.getInt(1) == 0) {
-                throw new NotFoundException("Customer with ID " + id + " not found.");
+                throw new NotFoundException("Customer with ID " + customerId + " not found.");
             }
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
 
-        // Proceed to delete the customer
+        // Now, proceed to delete the customer
         String query = "DELETE FROM customer WHERE customerId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
-            stmt.setInt(1, id);
+            stmt.setInt(1, customerId);
             int rowsAffected = stmt.executeUpdate();
             return rowsAffected > 0;
         } catch (SQLException e) {
@@ -149,21 +159,58 @@ public class CustomerDaoImpl implements CustomerDao {
 
     @Override
     public List<CustomerEntity> getAllCustomers() {
+        connection = DBConnection.getInstance().getConnection();
+
         List<CustomerEntity> customers = new ArrayList<>();
         String query = "SELECT * FROM customer";
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                customers.add(new CustomerEntity(
-                        rs.getInt("customerId"),
-                        rs.getInt("userId"),
-                        rs.getString("name"),
-                        rs.getString("address"),
-                        rs.getString("nic"),
-                        rs.getString("phoneNumber"),
-                        rs.getString("registrationDate"),
-                        rs.getString("email")
-                ));
+                // Using the Builder pattern to create the CustomerEntity
+                customers.add(new CustomerEntity.Builder()
+                        .customerId(rs.getInt("customerId"))
+                        .userId(rs.getInt("userId"))
+                        .name(rs.getString("name"))
+                        .address(rs.getString("address"))
+                        .nic(rs.getString("nic"))
+                        .phoneNumber(rs.getString("phoneNumber"))
+                        .registrationDate(rs.getString("registrationDate"))
+                        .email(rs.getString("email"))
+                        .build());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return customers;
+    }
+
+    public List<CustomerEntity> searchCustomers(String searchTerm) {
+        connection = DBConnection.getInstance().getConnection();
+
+        List<CustomerEntity> customers = new ArrayList<>();
+        String query = "SELECT * FROM customer WHERE name LIKE ? OR email LIKE ? OR address LIKE ? OR phoneNumber LIKE ? OR nic LIKE ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, "%" + searchTerm + "%");
+            stmt.setString(2, "%" + searchTerm + "%");
+            stmt.setString(3, "%" + searchTerm + "%");
+            stmt.setString(4, "%" + searchTerm + "%");
+            stmt.setString(5, "%" + searchTerm + "%");
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                // Using the Builder pattern to create the CustomerEntity
+                customers.add(new CustomerEntity.Builder()
+                        .customerId(rs.getInt("customerId"))
+                        .userId(rs.getInt("userId"))
+                        .name(rs.getString("name"))
+                        .address(rs.getString("address"))
+                        .nic(rs.getString("nic"))
+                        .phoneNumber(rs.getString("phoneNumber"))
+                        .registrationDate(rs.getString("registrationDate"))
+                        .email(rs.getString("email"))
+                        .build());
             }
         } catch (SQLException e) {
             e.printStackTrace();

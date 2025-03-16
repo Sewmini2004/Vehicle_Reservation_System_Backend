@@ -10,5 +10,6 @@ public interface VehicleDao {
     boolean updateVehicle(VehicleEntity vehicleEntity);
     boolean deleteVehicle(int vehicleId);
     boolean existsById(int id);
+    public List<VehicleEntity> searchVehicles(String searchTerm);
 
 }

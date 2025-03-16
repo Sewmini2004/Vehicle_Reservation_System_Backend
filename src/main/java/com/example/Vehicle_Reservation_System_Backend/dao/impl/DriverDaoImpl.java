@@ -4,6 +4,7 @@ import com.example.Vehicle_Reservation_System_Backend.dao.DriverDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.DriverEntity;
 import com.example.Vehicle_Reservation_System_Backend.exception.AlreadyException;
 import com.example.Vehicle_Reservation_System_Backend.exception.NotFoundException;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,22 +12,23 @@ import java.util.List;
 
 public class DriverDaoImpl implements DriverDao {
 
-    private final Connection connection;
+    private Connection connection;
 
-    // Constructor to accept the shared Connection instance
     public DriverDaoImpl(Connection connection) {
         this.connection = connection;
     }
 
     @Override
     public boolean saveDriver(DriverEntity driverEntity) {
-        // Check if the license number or phone number already exists
+        connection = DBConnection.getInstance().getConnection();
+
         try {
             String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE licenseNumber = ? OR phoneNumber = ?";
             PreparedStatement stmt = connection.prepareStatement(queryCheckExistence);
             stmt.setString(1, driverEntity.getLicenseNumber());
             stmt.setString(2, driverEntity.getPhoneNumber());
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next() && rs.getInt(1) > 0) {
                 throw new AlreadyException("Driver with the same license number or phone number already exists.");
             }
@@ -35,7 +37,6 @@ public class DriverDaoImpl implements DriverDao {
             return false;
         }
 
-        // Insert the driver into the database
         String query = "INSERT INTO driver (name, licenseNumber, status, shiftTiming, salary, experienceYears, phoneNumber) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, driverEntity.getName());
@@ -55,21 +56,23 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public DriverEntity getById(int driverId) {
+        connection = DBConnection.getInstance().getConnection();
         String query = "SELECT * FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
-                return new DriverEntity(
-                        rs.getInt("driverId"),
-                        rs.getString("name"),
-                        rs.getString("licenseNumber"),
-                        rs.getString("status"),
-                        rs.getString("shiftTiming"),
-                        rs.getDouble("salary"),
-                        rs.getInt("experienceYears"),
-                        rs.getString("phoneNumber")
-                );
+                return new DriverEntity.Builder()
+                        .driverId(rs.getInt("driverId"))
+                        .name(rs.getString("name"))
+                        .licenseNumber(rs.getString("licenseNumber"))
+                        .status(rs.getString("status"))
+                        .shiftTiming(rs.getString("shiftTiming"))
+                        .salary(rs.getDouble("salary"))
+                        .experienceYears(rs.getInt("experienceYears"))
+                        .phoneNumber(rs.getString("phoneNumber"))
+                        .build();
             } else {
                 throw new NotFoundException("Driver with ID " + driverId + " not found.");
             }
@@ -81,11 +84,12 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public boolean updateDriver(DriverEntity driverEntity) {
-        // Check if the driver exists before updating
+        connection = DBConnection.getInstance().getConnection();
         String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, driverEntity.getDriverId());
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next() && rs.getInt(1) == 0) {
                 throw new NotFoundException("Driver with ID " + driverEntity.getDriverId() + " not found.");
             }
@@ -94,7 +98,6 @@ public class DriverDaoImpl implements DriverDao {
             return false;
         }
 
-        // Proceed to update the driver
         String query = "UPDATE driver SET name = ?, licenseNumber = ?, status = ?, shiftTiming = ?, salary = ?, experienceYears = ?, phoneNumber = ? WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, driverEntity.getName());
@@ -115,11 +118,12 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public boolean deleteDriver(int driverId) {
-        // Check if the driver exists before deleting
+        connection = DBConnection.getInstance().getConnection();
         String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, driverId);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next() && rs.getInt(1) == 0) {
                 throw new NotFoundException("Driver with ID " + driverId + " not found.");
             }
@@ -128,7 +132,6 @@ public class DriverDaoImpl implements DriverDao {
             return false;
         }
 
-        // Proceed to delete the driver
         String query = "DELETE FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, driverId);
@@ -142,21 +145,22 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public List<DriverEntity> getAllDrivers() {
+        connection = DBConnection.getInstance().getConnection();
         List<DriverEntity> drivers = new ArrayList<>();
         String query = "SELECT * FROM driver";
         try (Statement stmt = connection.createStatement()) {
             ResultSet rs = stmt.executeQuery(query);
             while (rs.next()) {
-                drivers.add(new DriverEntity(
-                        rs.getInt("driverId"),
-                        rs.getString("name"),
-                        rs.getString("licenseNumber"),
-                        rs.getString("status"),
-                        rs.getString("shiftTiming"),
-                        rs.getDouble("salary"),
-                        rs.getInt("experienceYears"),
-                        rs.getString("phoneNumber")
-                ));
+                drivers.add(new DriverEntity.Builder()
+                        .driverId(rs.getInt("driverId"))
+                        .name(rs.getString("name"))
+                        .licenseNumber(rs.getString("licenseNumber"))
+                        .status(rs.getString("status"))
+                        .shiftTiming(rs.getString("shiftTiming"))
+                        .salary(rs.getDouble("salary"))
+                        .experienceYears(rs.getInt("experienceYears"))
+                        .phoneNumber(rs.getString("phoneNumber"))
+                        .build());
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -166,7 +170,7 @@ public class DriverDaoImpl implements DriverDao {
 
     @Override
     public boolean existsById(int id) {
-        // Check if the driver exists before updating
+        connection = DBConnection.getInstance().getConnection();
         String queryCheckExistence = "SELECT COUNT(*) FROM driver WHERE driverId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, id);
@@ -177,5 +181,4 @@ public class DriverDaoImpl implements DriverDao {
             return false;
         }
     }
-
 }

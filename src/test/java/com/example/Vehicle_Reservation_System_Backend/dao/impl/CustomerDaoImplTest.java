@@ -31,7 +31,17 @@ class CustomerDaoImplTest {
 
     @Test
     void testSaveCustomer_WhenCustomerDoesNotExist() throws SQLException {
-        CustomerEntity customerEntity = new CustomerEntity(1, 101, "John Doe", "123 Street", "NIC123", "1234567890", "2025-03-12", "johndoe@example.com");
+        // Use the Builder pattern to create the customer entity
+        CustomerEntity customerEntity = new CustomerEntity.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Street")
+                .nic("NIC123")
+                .phoneNumber("1234567890")
+                .registrationDate("2025-03-12")
+                .email("johndoe@example.com")
+                .build();
 
         // Mock the statement to simulate no existing record with the given email or NIC
         PreparedStatement mockStmt = mock(PreparedStatement.class);
@@ -56,7 +66,17 @@ class CustomerDaoImplTest {
 
     @Test
     void testSaveCustomer_WhenCustomerAlreadyExists() throws SQLException {
-        CustomerEntity customerEntity = new CustomerEntity(1, 101, "John Doe", "123 Street", "NIC123", "1234567890", "2025-03-12", "johndoe@example.com");
+        // Use the Builder pattern to create the customer entity
+        CustomerEntity customerEntity = new CustomerEntity.Builder()
+                .customerId(1)
+                .userId(101)
+                .name("John Doe")
+                .address("123 Street")
+                .nic("NIC123")
+                .phoneNumber("1234567890")
+                .registrationDate("2025-03-12")
+                .email("johndoe@example.com")
+                .build();
 
         // Mock the statement to simulate that a customer with the given email or NIC already exists
         PreparedStatement mockStmt = mock(PreparedStatement.class);

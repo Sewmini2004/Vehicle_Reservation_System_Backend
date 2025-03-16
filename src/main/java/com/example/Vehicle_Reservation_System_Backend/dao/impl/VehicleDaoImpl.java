@@ -2,6 +2,7 @@ package com.example.Vehicle_Reservation_System_Backend.dao.impl;
 
 import com.example.Vehicle_Reservation_System_Backend.dao.VehicleDao;
 import com.example.Vehicle_Reservation_System_Backend.entity.VehicleEntity;
+import com.example.Vehicle_Reservation_System_Backend.utils.DBConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public boolean saveVehicle(VehicleEntity vehicleEntity) {
+        connection = DBConnection.getInstance().getConnection();
         String query = "INSERT INTO vehicle (carType, model, availabilityStatus, registrationNumber, fuelType, carModel, seatingCapacity) VALUES (?, ?, ?, ?, ?, ?, ?)";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, vehicleEntity.getCarType());
@@ -35,6 +37,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public VehicleEntity getById(int vehicleId) {
+        connection = DBConnection.getInstance().getConnection();
         String query = "SELECT * FROM vehicle WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setInt(1, vehicleId);
@@ -59,6 +62,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public List<VehicleEntity> getAllVehicles() {
+        connection = DBConnection.getInstance().getConnection();
         List<VehicleEntity> vehicles = new ArrayList<>();
         String query = "SELECT * FROM vehicle";
         try (Statement stmt = connection.createStatement();
@@ -83,6 +87,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public boolean updateVehicle(VehicleEntity vehicleEntity) {
+        connection = DBConnection.getInstance().getConnection();
         String query = "UPDATE vehicle SET carType = ?, model = ?, availabilityStatus = ?, registrationNumber = ?, fuelType = ?, carModel = ?, seatingCapacity = ? WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setString(1, vehicleEntity.getCarType());
@@ -102,6 +107,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public boolean deleteVehicle(int vehicleId) {
+        connection = DBConnection.getInstance().getConnection();
         String queryCheckExistence = "SELECT COUNT(*) FROM vehicle WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, vehicleId);
@@ -126,6 +132,7 @@ public class VehicleDaoImpl implements VehicleDao {
 
     @Override
     public boolean existsById(int id) {
+        connection = DBConnection.getInstance().getConnection();
         String queryCheckExistence = "SELECT COUNT(*) FROM vehicle WHERE vehicleId = ?";
         try (PreparedStatement stmt = connection.prepareStatement(queryCheckExistence)) {
             stmt.setInt(1, id);
@@ -136,4 +143,57 @@ public class VehicleDaoImpl implements VehicleDao {
             return false;
         }
     }
+
+    @Override
+    public List<VehicleEntity> searchVehicles(String searchTerm) {
+        connection = DBConnection.getInstance().getConnection();
+        List<VehicleEntity> vehicles = new ArrayList<>();
+
+        // If no search term is provided, return an empty list
+        if (searchTerm == null || searchTerm.isEmpty()) {
+            return vehicles;
+        }
+
+        // SQL query to search vehicles based on multiple fields
+        String query = "SELECT * FROM vehicle WHERE " +
+                "carType LIKE ? OR model LIKE ? OR availabilityStatus LIKE ? " +
+                "OR registrationNumber LIKE ? OR fuelType LIKE ? " +
+                "OR carModel LIKE ? OR seatingCapacity LIKE ?";
+
+        try (PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, "%" + searchTerm + "%");
+            stmt.setString(2, "%" + searchTerm + "%");
+            stmt.setString(3, "%" + searchTerm + "%");
+            stmt.setString(4, "%" + searchTerm + "%");
+            stmt.setString(5, "%" + searchTerm + "%");
+            stmt.setString(6, "%" + searchTerm + "%");
+            stmt.setString(7, "%" + searchTerm + "%");
+
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                vehicles.add(new VehicleEntity(
+                        rs.getInt("vehicleId"),
+                        rs.getString("carType"),
+                        rs.getString("model"),
+                        rs.getString("availabilityStatus"),
+                        rs.getString("registrationNumber"),
+                        rs.getString("fuelType"),
+                        rs.getString("carModel"),
+                        rs.getInt("seatingCapacity")
+                ));
+            }
+
+            if (vehicles.isEmpty()) {
+                System.out.println("No vehicles found for search term: " + searchTerm);
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return vehicles;
+    }
+
+
 }

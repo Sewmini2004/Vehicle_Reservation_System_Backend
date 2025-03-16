@@ -13,4 +13,5 @@ public interface CustomerDao {
     List<CustomerEntity> getAllCustomers();
     CustomerEntity getById(int id);
     boolean existsById(int id);
+    public List<CustomerEntity> searchCustomers(String searchTerm);
 }

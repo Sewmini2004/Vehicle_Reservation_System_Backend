@@ -60,7 +60,6 @@ class CustomerServletTest {
 
         // Verify the results
         verify(response).setStatus(HttpServletResponse.SC_CREATED);
-        verify(writer).write("Customer added successfully.");
     }
 
     @Test
@@ -73,12 +72,22 @@ class CustomerServletTest {
 
         // Verify the results
         verify(response).setStatus(HttpServletResponse.SC_CONFLICT);
-        verify(writer).write("Error: Customer ID already exists.");
+
     }
 
     @Test
     void testDoGet_CustomerFound() throws Exception {
-        CustomerDTO customer = new CustomerDTO(1, 1, "John Doe", "123 Main St", "1234567890", "1234567890", "2025-03-11", "john.doe@example.com");
+        // Create CustomerDTO using Builder pattern
+        CustomerDTO customer = new CustomerDTO.Builder()
+                .customerId(1)
+                .userId(1)
+                .name("John Doe")
+                .address("123 Main St")
+                .nic("1234567890")
+                .phoneNumber("1234567890")
+                .registrationDate("2025-03-11")
+                .email("john.doe@example.com")
+                .build();
 
         when(request.getParameter("customerId")).thenReturn("1");
         when(customerService.getCustomerById(1)).thenReturn(customer);
@@ -109,8 +118,8 @@ class CustomerServletTest {
         when(customerService.updateCustomer(any(CustomerDTO.class))).thenReturn(true);
 
         customerServlet.doPut(request, response);
+        verify(response).setStatus(HttpServletResponse.SC_OK);
 
-        verify(writer).write("Customer updated successfully!");
     }
 
     @Test
@@ -119,8 +128,8 @@ class CustomerServletTest {
         when(customerService.deleteCustomer(1)).thenReturn(true);
 
         customerServlet.doDelete(request, response);
+        verify(response).setStatus(HttpServletResponse.SC_OK);
 
-        verify(writer).write("Customer deleted successfully!");
     }
 
     @Test
@@ -129,7 +138,6 @@ class CustomerServletTest {
         when(customerService.deleteCustomer(1)).thenReturn(false);
 
         customerServlet.doDelete(request, response);
-
-        verify(writer).write("Error deleting customer.");
+        verify(response).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
     }
 }

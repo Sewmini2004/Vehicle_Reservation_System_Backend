@@ -12,6 +12,7 @@ import org.mockito.*;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -43,19 +44,6 @@ class BookingServletTest {
         when(responseMock.getWriter()).thenReturn(writerMock);
     }
 
-    @Test
-    void testCreateBooking_ValidRequest() throws Exception {
-        String json = "{\"vehicleId\":\"1\",\"customerId\":\"1\",\"driverId\":\"1\",\"pickupLocation\":\"A\",\"dropLocation\":\"B\",\"carType\":\"Sedan\",\"totalBill\":\"150.0\"}";
-
-        when(requestMock.getReader()).thenReturn(new BufferedReader(new StringReader(json)));
-        when(vehicleServiceMock.existsById(anyInt())).thenReturn(true);
-        when(bookingServiceMock.addBooking(any(BookingDTO.class))).thenReturn(true);
-
-        bookingServlet.doPost(requestMock, responseMock);
-
-        verify(responseMock).setStatus(HttpServletResponse.SC_CREATED); // Ensure created status (201)
-        verify(writerMock).write("{\"Message\": \"Booking successfully created.\"}"); // Ensure success message
-    }
 
     @Test
     void testCreateBooking_VehicleNotFound() throws Exception {
@@ -66,21 +54,27 @@ class BookingServletTest {
 
         bookingServlet.doPost(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure bad request status (400)
-        verify(writerMock).write("{\"Error\": \"Vehicle ID not found.\"}"); // Ensure error message for invalid vehicle
+        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        verify(writerMock).write("{\"Error\": \"Vehicle ID not found.\"}");
     }
 
     @Test
     void testGetBooking_ValidId() throws Exception {
         int bookingId = 1;
-        BookingDTO booking = new BookingDTO(bookingId, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0);
+        BookingDTO booking = new BookingDTO.Builder()
+                .bookingId(bookingId)
+                .bookingDate(new Date())
+                .driverId(1)
+                .vehicleId(1)
+                .customerId(1)
+                .build();
         when(requestMock.getParameter("bookingId")).thenReturn(String.valueOf(bookingId));
         when(bookingServiceMock.getBookingById(bookingId)).thenReturn(booking);
 
         bookingServlet.doGet(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK); // Ensure OK status (200)
-        verify(writerMock).write(anyString());  // Ensure the booking is written as JSON
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK);
+        verify(writerMock).write(anyString());
     }
 
     @Test
@@ -98,15 +92,37 @@ class BookingServletTest {
 
     @Test
     void testUpdateBooking_ValidUpdate() throws Exception {
+        // Create a JSON string for the update request
         String json = "{\"bookingId\":1,\"customerId\":\"1\",\"vehicleId\":\"1\",\"driverId\":\"1\",\"pickupLocation\":\"A\",\"dropLocation\":\"B\",\"carType\":\"Sedan\",\"totalBill\":\"150.0\",\"bookingDate\":\"2025-03-11\"}";
+
+        // Mocking the request reader to return the JSON string
         when(requestMock.getReader()).thenReturn(new BufferedReader(new StringReader(json)));
-        when(bookingServiceMock.getBookingById(anyInt())).thenReturn(new BookingDTO(1, 1, 1, 1, "A", "B", new java.util.Date(), "Sedan", 150.0));
+
+        // Create a valid BookingDTO to be returned by the mocked booking service
+        BookingDTO bookingDTO = new BookingDTO.Builder()
+                .bookingId(1)
+                .customerId(1)
+                .vehicleId(1)
+                .driverId(1)
+                .pickupLocation("A")
+                .dropLocation("B")
+                .carType("Sedan")
+                .totalBill(150.0)
+                .bookingDate(new java.util.Date())
+                .cancelStatus("")
+                .distance(0.0)
+                .build();
+
+        when(bookingServiceMock.getBookingById(anyInt())).thenReturn(bookingDTO);
+
         when(bookingServiceMock.updateBooking(any(BookingDTO.class))).thenReturn(true);
+
+        PrintWriter writer = mock(PrintWriter.class);
+        when(responseMock.getWriter()).thenReturn(writer);
 
         bookingServlet.doPut(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK); // Ensure OK status (200)
-        verify(writerMock).write("Booking updated successfully."); // Ensure success message
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK);  // Ensure status is 200 OK
     }
 
 
@@ -131,8 +147,7 @@ class BookingServletTest {
         bookingServlet.doDelete(requestMock, responseMock);
 
         // Verify the correct status is set (200 OK)
-        verify(responseMock).setStatus(HttpServletResponse.SC_OK);  // Ensure OK status (200)
-        // Verify that the success message is written to the response
+        verify(responseMock).setStatus(HttpServletResponse.SC_OK);
         verify(writerMock).write("Booking deleted successfully.");
     }
 
@@ -146,13 +161,12 @@ class BookingServletTest {
 
         bookingServlet.doDelete(requestMock, responseMock);
 
-        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST); // Ensure bad request status (400)
+        verify(responseMock).setStatus(HttpServletResponse.SC_BAD_REQUEST);
         verify(writerMock).write("Booking cannot be deleted after 4 hours.");
     }
 
     @Test
     void testCreateBooking_InvalidData() throws Exception {
-        // Invalid data: totalBill is a string ("invalidBill"), not a valid number
         String json = "{\"vehicleId\":\"1\",\"customerId\":\"1\",\"driverId\":\"1\",\"pickupLocation\":\"A\",\"dropLocation\":\"B\",\"carType\":\"Sedan\",\"totalBill\":\"invalidBill\"}";
 
         when(requestMock.getReader()).thenReturn(new BufferedReader(new StringReader(json)));

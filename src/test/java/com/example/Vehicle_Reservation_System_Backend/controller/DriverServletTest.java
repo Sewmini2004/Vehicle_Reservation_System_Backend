@@ -1,7 +1,5 @@
 package com.example.Vehicle_Reservation_System_Backend.controller;
 
-import static org.mockito.Mockito.*;
-
 import com.example.Vehicle_Reservation_System_Backend.dto.DriverDTO;
 import com.example.Vehicle_Reservation_System_Backend.service.DriverService;
 import jakarta.servlet.http.*;
@@ -9,6 +7,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.*;
+
+import static org.mockito.Mockito.*;
 
 public class DriverServletTest {
 
@@ -72,7 +72,17 @@ public class DriverServletTest {
     @Test
     public void testGetDriver_ValidId() throws Exception {
         int driverId = 1;
-        DriverDTO driver = new DriverDTO(driverId, "John Doe", "AB12345", "active", "Morning", 3000, 5, "1234567890");
+        DriverDTO driver = new DriverDTO.Builder()
+                .driverId(driverId)
+                .name("John Doe")
+                .licenseNumber("AB12345")
+                .status("active")
+                .shiftTiming("Morning")
+                .salary(3000)
+                .experienceYears(5)
+                .phoneNumber("1234567890")
+                .build();
+
         when(requestMock.getParameter("driverId")).thenReturn(String.valueOf(driverId));
         when(driverServiceMock.getDriverById(driverId)).thenReturn(driver);
 

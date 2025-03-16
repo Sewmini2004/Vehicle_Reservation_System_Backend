@@ -11,4 +11,5 @@ public interface BookingService {
     List<BookingDTO> getAllBookings() throws SQLException;
     boolean updateBooking(BookingDTO booking);
     boolean deleteBooking(int bookingId) throws SQLException;
+    public List<BookingDTO> searchBookings(String searchTerm);
 }

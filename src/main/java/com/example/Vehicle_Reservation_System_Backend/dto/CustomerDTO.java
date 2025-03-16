@@ -10,82 +10,102 @@ public class CustomerDTO {
     private String registrationDate;
     private String email;
 
-    public int getCustomerId() {
-        return customerId;
+    private CustomerDTO(Builder builder) {
+        this.customerId = builder.customerId;
+        this.userId = builder.userId;
+        this.name = builder.name;
+        this.address = builder.address;
+        this.nic = builder.nic;
+        this.phoneNumber = builder.phoneNumber;
+        this.registrationDate = builder.registrationDate;
+        this.email = builder.email;
     }
 
-    public void setCustomerId(int customerId) {
-        this.customerId = customerId;
+    public static class Builder {
+        private int customerId;
+        private int userId;
+        private String name;
+        private String address;
+        private String nic;
+        private String phoneNumber;
+        private String registrationDate;
+        private String email;
+
+        public Builder customerId(int customerId) {
+            this.customerId = customerId;
+            return this;
+        }
+
+        public Builder userId(int userId) {
+            this.userId = userId;
+            return this;
+        }
+
+        public Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public Builder address(String address) {
+            this.address = address;
+            return this;
+        }
+
+        public Builder nic(String nic) {
+            this.nic = nic;
+            return this;
+        }
+
+        public Builder phoneNumber(String phoneNumber) {
+            this.phoneNumber = phoneNumber;
+            return this;
+        }
+
+        public Builder registrationDate(String registrationDate) {
+            this.registrationDate = registrationDate;
+            return this;
+        }
+
+        public Builder email(String email) {
+            this.email = email;
+            return this;
+        }
+
+        public CustomerDTO build() {
+            return new CustomerDTO(this);
+        }
+    }
+
+    // Getters for all fields
+    public int getCustomerId() {
+        return customerId;
     }
 
     public int getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
-        this.userId = userId;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getAddress() {
         return address;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
     public String getNic() {
         return nic;
-    }
-
-    public void setNic(String nic) {
-        this.nic = nic;
     }
 
     public String getPhoneNumber() {
         return phoneNumber;
     }
 
-    public void setPhoneNumber(String phoneNumber) {
-        this.phoneNumber = phoneNumber;
-    }
-
     public String getRegistrationDate() {
         return registrationDate;
     }
 
-    public void setRegistrationDate(String registrationDate) {
-        this.registrationDate = registrationDate;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public CustomerDTO() {
-
-    }
-
-    public CustomerDTO(int customerId, int userId, String name, String address, String nic, String phoneNumber, String registrationDate, String email) {
-        this.customerId = customerId;
-        this.userId = userId;
-        this.name = name;
-        this.address = address;
-        this.nic = nic;
-        this.phoneNumber = phoneNumber;
-        this.registrationDate = registrationDate;
-        this.email = email;
     }
 }

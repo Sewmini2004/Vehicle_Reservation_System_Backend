@@ -5,29 +5,31 @@ import com.example.Vehicle_Reservation_System_Backend.entity.CustomerEntity;
 
 public class CustomerConverter {
 
+    // Convert CustomerEntity to CustomerDTO using Builder Pattern
     public static CustomerDTO convertToDTO(CustomerEntity customerEntity) {
-        return new CustomerDTO(
-                customerEntity.getCustomerId(),
-                customerEntity.getUserId(),
-                customerEntity.getName(),
-                customerEntity.getAddress(),
-                customerEntity.getNic(),
-                customerEntity.getPhoneNumber(),
-                customerEntity.getRegistrationDate(),
-                customerEntity.getEmail()
-        );
+        return new CustomerDTO.Builder()
+                .customerId(customerEntity.getCustomerId())
+                .userId(customerEntity.getUserId())
+                .name(customerEntity.getName())
+                .address(customerEntity.getAddress())
+                .nic(customerEntity.getNic())
+                .phoneNumber(customerEntity.getPhoneNumber())
+                .registrationDate(customerEntity.getRegistrationDate())
+                .email(customerEntity.getEmail())
+                .build();
     }
 
+    // Convert CustomerDTO to CustomerEntity using Builder Pattern
     public static CustomerEntity convertToEntity(CustomerDTO customerDTO) {
-        return new CustomerEntity(
-                customerDTO.getCustomerId(),
-                customerDTO.getUserId(),
-                customerDTO.getName(),
-                customerDTO.getAddress(),
-                customerDTO.getNic(),
-                customerDTO.getPhoneNumber(),
-                customerDTO.getRegistrationDate(),
-                customerDTO.getEmail()
-        );
+        return new CustomerEntity.Builder()
+                .customerId(customerDTO.getCustomerId())
+                .userId(customerDTO.getUserId())
+                .name(customerDTO.getName())
+                .address(customerDTO.getAddress())
+                .nic(customerDTO.getNic())
+                .phoneNumber(customerDTO.getPhoneNumber())
+                .registrationDate(customerDTO.getRegistrationDate())
+                .email(customerDTO.getEmail())
+                .build();
     }
 }
